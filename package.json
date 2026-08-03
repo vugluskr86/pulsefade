@@ -10,7 +10,7 @@
     "preview": "vite preview --host",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "deploy": "VITE_GAMEPUSH_ENABLED=false npm run build && git add docs/ && git commit -m \"Deploy to GitHub Pages\" && git push",
+    "deploy": "set VITE_GAMEPUSH_ENABLED=false && npm run build && git add docs/ && git commit -m \"Deploy to GitHub Pages\" && git push",
     "test:watch": "vitest"
   },
   "devDependencies": {
