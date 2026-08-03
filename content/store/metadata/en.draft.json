@@ -1,0 +1,26 @@
+{
+  "status": "draft_until_release_content_is_implemented",
+  "title": "PULSEFADE",
+  "subtitle": "Catch a rhythm that refuses to stay still",
+  "shortDescription": "A minimalist one-tap rhythm arcade built around acceleration, pauses and deceptive timing.",
+  "fullDescription": [
+    "PULSEFADE is a rhythm arcade where each incoming ring visualizes the duration of the next interval.",
+    "Tap as the pulse meets the target, build perfect streaks and adapt to readable tempo patterns.",
+    "Play Adaptive, Chaos, Marathon, Zen and local Duel. Scores and progress sync through the host platform where supported."
+  ],
+  "features": [
+    "One-tap controls",
+    "Readable tempo telegraphing",
+    "Deterministic patterns instead of unfair random changes",
+    "Five game modes",
+    "Replay of the best streak"
+  ],
+  "controls": "Tap anywhere; on desktop use Space or the left mouse button.",
+  "monetizationDisclosure": "Contains ads. An optional rewarded video can double soft currency earned after a round.",
+  "releaseBlockers": [
+    "Implement the 12-stage Adaptive Journey",
+    "Add complete RU/EN interface localization",
+    "Replace technical images with final store art",
+    "Publish privacy policy and audio licenses"
+  ]
+}

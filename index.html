@@ -1,21 +1,20 @@
 <!doctype html>
 <html lang="ru">
   <head>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no"
-    />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
     <meta name="theme-color" content="#07070f" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="icon" type="image/png" href="./icons/icon-512.png" />
     <title>PULSEFADE</title>
-    <link rel="stylesheet" href="/src/ui/style.css" />
   </head>
   <body>
-    <div id="stage">
-      <canvas id="gl"></canvas>
+    <main id="stage" aria-label="PULSEFADE">
+      <canvas id="gl" aria-label="Игровое поле"></canvas>
 
-      <div id="hud" class="hud">
+      <section id="hud" class="hud" aria-live="polite">
         <div class="hud__top">
           <div class="readout">
             <span class="readout__label">score</span>
@@ -26,23 +25,19 @@
             <span class="readout__value" data-hud="multiplier">×1</span>
           </div>
         </div>
-
-        <div class="timebar"><i class="timebar__fill" data-hud="time"></i></div>
-
+        <div class="timebar"><span class="timebar__fill" data-hud="time"></span></div>
         <div class="hud__mode" data-hud="mode">adaptive</div>
-
+        <div class="grade" data-hud="grade"></div>
         <div class="hud__bottom">
           <div class="combo" data-hud="combo"></div>
           <div class="tape" data-hud="tape" aria-hidden="true"></div>
         </div>
+        <button class="iconbtn" type="button" data-hud="menu" aria-label="Открыть меню">≡</button>
+      </section>
 
-        <div class="grade" data-hud="grade"></div>
-        <button class="iconbtn" data-hud="menu" type="button" aria-label="Режимы">≡</button>
-      </div>
-
-      <div id="overlay" class="overlay" hidden></div>
-      <div id="debug" class="debug" hidden></div>
-    </div>
+      <section id="overlay" class="overlay" hidden></section>
+      <aside id="debug" class="debug" hidden></aside>
+    </main>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

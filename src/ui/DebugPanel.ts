@@ -90,6 +90,11 @@ export class DebugPanel {
     private readonly root: HTMLElement,
     private readonly tuning: Tuning,
   ) {
+    // В production debug-панель недоступна — Vite вырезает этот блок при сборке
+    if (import.meta.env.PROD) {
+      this.root.hidden = true;
+      return;
+    }
     this.build();
     window.addEventListener('keydown', (event) => {
       if (event.code === 'Backquote') this.toggle();

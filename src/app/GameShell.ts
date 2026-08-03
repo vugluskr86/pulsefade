@@ -2,6 +2,45 @@ import { GameClock } from '../core/time/Clock';
 import { randomSeed } from '../core/math/Rng';
 import { cloneTuning } from '../config/Tuning';
 import { MODES, type ModeId } from '../config/modes';
+import {
+  JOURNEY_TRIALS,
+  evaluateMedal,
+  updateJourneyProgress,
+  loadJourneyState,
+  saveJourneyState,
+  type JourneyState,
+  type Medal,
+} from '../config/journey';
+import {
+  dailySeed,
+  dailyReward,
+  dailyImprovementBonus,
+  claimDailyReward,
+  todayKey,
+} from '../config/daily';
+import {
+  WEEKLY_MISSIONS,
+  loadMissionsState,
+  saveMissionsState,
+  updateMissionProgress,
+  pendingMissionRewards,
+  completedUnclaimedMissions,
+  claimMissionReward,
+  type MissionsState,
+  type MissionDefinition,
+  type MissionId,
+} from '../config/missions';
+import {
+  ALL_COSMETICS,
+  loadCosmeticState,
+  saveCosmeticState,
+  canBuy,
+  buyCosmetic,
+  selectCosmetic,
+  type CosmeticState,
+  type CosmeticItem,
+  type CosmeticCategory,
+} from '../config/cosmetics';
 import { RecordedBeatSource } from '../domain/patterns/PatternBeatSource';
 import { InputRouter } from '../input/InputRouter';
 import { ScriptedInputProvider } from '../input/ScriptedInputProvider';
@@ -57,8 +96,16 @@ export class GameShell {
   private primaryAction = 'again';
   private inReplay = false;
   private menuRequested = false;
-  private duel: { seed: number; first: RoundSummary | null; firstRecorder: RunRecorder | null } | null =
-    null;
+  private journey: JourneyState;
+  private missions: MissionsState;
+  private cosmetics: CosmeticState;
+  private currentJourneyTrialId: number | null = null;
+  private dailyBestScore = 0;
+  private duel: {
+    seed: number;
+    first: RoundSummary | null;
+    firstRecorder: RunRecorder | null;
+  } | null = null;
   private wantsLiveInput = false;
   private platformMuted: boolean;
   private audioEnabled = true;
@@ -82,6 +129,9 @@ export class GameShell {
       onFirstInput: () => this.audio.unlock(),
     });
     this.platformMuted = platform.soundMuted;
+    this.journey = loadJourneyState();
+    this.missions = loadMissionsState();
+    this.cosmetics = loadCosmeticState();
 
     this.overlay.onAction((id) => this.handleAction(id));
     this.hud.onMenu(() => this.openMenu());
@@ -252,10 +302,23 @@ export class GameShell {
     }
 
     this.replaySource = runner.recorder;
+
+    if (this.currentJourneyTrialId !== null) {
+      this.onJourneyFinished(summary);
+      return;
+    }
+
+    if (this.mode === 'daily') {
+      this.onDailyFinished(summary);
+      return;
+    }
+
     if (summary.mode.duel) {
       this.onDuelRoundFinished(summary, runner);
       return;
     }
+
+    this.trackMissionsOnRoundFinished(summary);
 
     this.resultReward = this.platform.calculateRoundReward(summary.score);
     this.platform.recordRound(this.toPlatformRound(summary), this.resultReward);
@@ -297,7 +360,11 @@ export class GameShell {
 
     this.pendingResults = {
       eyebrow: 'duel · итог',
-      title: secondWon ? 'Побеждает игрок 2' : summary.score === first.score ? 'Ничья' : 'Побеждает игрок 1',
+      title: secondWon
+        ? 'Побеждает игрок 2'
+        : summary.score === first.score
+          ? 'Ничья'
+          : 'Побеждает игрок 1',
       duel: {
         left: { name: 'Игрок 1', score: first.score },
         right: { name: 'Игрок 2', score: summary.score },
@@ -394,8 +461,115 @@ export class GameShell {
     this.breakAdToken += 1;
     this.wantsLiveInput = false;
     this.syncInputState();
-    this.overlay.showModes(this.mode, this.leaderboardActions());
+    const journeyAction: ActionItem = {
+      id: 'journey-list',
+      label: 'Испытания Journey',
+      hint: `${this.journey.trials.filter((t) => t.bestMedal !== 'none').length}/${JOURNEY_TRIALS.length} пройдено`,
+    };
+    this.overlay.showModes(this.mode, [journeyAction, ...this.leaderboardActions()]);
     this.primaryAction = 'close';
+  }
+
+  private showJourneyTrials(): void {
+    this.breakAdToken += 1;
+    this.wantsLiveInput = false;
+    this.syncInputState();
+    this.overlay.showJourneyTrials(this.journey);
+    this.primaryAction = `journey:${JOURNEY_TRIALS[this.journey.currentIndex].id}`;
+  }
+
+  private startJourneyTrial(trialId: number): void {
+    const trial = JOURNEY_TRIALS[trialId - 1];
+    if (!trial) return;
+
+    // Проверяем, что испытание разблокировано
+    if (trialId - 1 > this.journey.currentIndex) return;
+
+    this.currentJourneyTrialId = trialId;
+    this.breakAdToken += 1;
+    this.mode = trial.baseMode;
+    this.inReplay = false;
+    this.menuRequested = false;
+    this.pendingResults = null;
+    this.resultReward = 0;
+    this.rewardClaimed = false;
+    this.actionBusy = false;
+    this.pauseReasons.delete('visibility');
+    this.overlay.hide();
+    this.hud.resetTape();
+    this.wantsLiveInput = true;
+    this.syncInputState();
+
+    // Строим ModeDefinition для испытания
+    const baseMode = MODES[trial.baseMode];
+    const journeyMode = {
+      ...baseMode,
+      durationMs: trial.durationSec * 1000,
+      patternWeights: Object.fromEntries(trial.allowedPatterns.map((p) => [p, 1])),
+      eventChance: trial.eventChance,
+      eventsFromBeat: trial.eventsFromBeat,
+    };
+
+    this.swapRunner(
+      new RoundRunner(this.deps(), {
+        mode: journeyMode,
+        seed: trial.seed,
+        tuning: this.tuning,
+        inputProvider: this.input,
+      }),
+    );
+    this.platform.gameplayStart();
+    this.platform.goal('ROUND_START', trial.baseMode);
+  }
+
+  private onJourneyFinished(summary: RoundSummary): void {
+    const trialId = this.currentJourneyTrialId;
+    this.currentJourneyTrialId = null;
+    if (trialId === null) return;
+
+    const trial = JOURNEY_TRIALS[trialId - 1];
+    if (!trial) return;
+
+    const medal = evaluateMedal(trial, summary.score, summary.perfectRatio);
+    const previousMedal = this.journey.trials[trialId - 1]?.bestMedal ?? 'none';
+
+    this.journey = updateJourneyProgress(
+      this.journey,
+      trialId,
+      summary.score,
+      summary.perfectRatio,
+    );
+    saveJourneyState(this.journey);
+
+    const medalRank: Record<Medal, number> = { none: 0, bronze: 1, silver: 2, gold: 3 };
+    const isNewBest = medal !== 'none' && medalRank[medal] > medalRank[previousMedal];
+
+    this.overlay.showJourneyResult(
+      trialId,
+      medal,
+      summary.score,
+      summary.perfectRatio,
+      previousMedal,
+      [
+        {
+          id: `journey:${trialId}`,
+          label: isNewBest ? 'Повторить' : 'Ещё раз',
+          primary: true,
+          hint: isNewBest ? 'улучшить результат' : undefined,
+        },
+        ...(trialId < JOURNEY_TRIALS.length && medal !== 'none'
+          ? [
+              {
+                id: `journey:${trialId + 1}`,
+                label: `Дальше → #${trialId + 1}`,
+                hint: JOURNEY_TRIALS[trialId]?.title,
+              },
+            ]
+          : []),
+        { id: 'journey-list', label: 'Все испытания' },
+        { id: 'modes', label: 'Режимы' },
+      ],
+    );
   }
 
   private handleAction(id: string): void {
@@ -406,6 +580,17 @@ export class GameShell {
       const mode = id.slice(5) as ModeId;
       if (mode === 'duel') this.startDuel();
       else this.startRound(mode);
+      return;
+    }
+
+    if (id.startsWith('journey:')) {
+      const trialId = parseInt(id.slice(8), 10);
+      if (!isNaN(trialId)) this.startJourneyTrial(trialId);
+      return;
+    }
+
+    if (id.startsWith('cosmetic:')) {
+      this.handleShopBuy(id.slice(9));
       return;
     }
 
@@ -437,6 +622,19 @@ export class GameShell {
         this.overlay.hide();
         this.wantsLiveInput = !this.inReplay;
         this.syncInputState();
+        break;
+      case 'journey-list':
+        this.showJourneyTrials();
+        break;
+      case 'shop':
+        this.showShop();
+        break;
+      case 'missions-list':
+        this.showMissionsList();
+        break;
+      case 'claim-missions':
+        this.claimMissionsRewards();
+        this.showMissionsList();
         break;
       case 'debug':
         this.debug.toggle(true);
@@ -564,6 +762,178 @@ export class GameShell {
       judged: summary.judged,
       reason: summary.reason,
     };
+  }
+
+  private trackMissionsOnRoundFinished(summary: RoundSummary): void {
+    const updates: Partial<Record<MissionId, { delta?: number; set?: number }>> = {};
+
+    // perfect_25: считаем PERFECT за раунд
+    updates['perfect_25'] = { delta: summary.perfects };
+
+    // combo_20: проверяем, не побит ли рекорд серии
+    updates['combo_20'] = { set: summary.bestCombo };
+
+    // flawless: раунд без MISS
+    if (summary.misses === 0) updates['flawless'] = { delta: 1 };
+
+    // modes_played: новый уникальный режим (храним отдельно)
+    const playedModes = this.getPlayedModes();
+    if (!playedModes.has(summary.mode.id)) {
+      playedModes.add(summary.mode.id);
+      this.savePlayedModes(playedModes);
+    }
+    updates['modes_3'] = { set: playedModes.size };
+
+    // beat_record: проверяется отдельно в onFinished через platform
+    // rounds_5: +1 раунд
+    updates['rounds_5'] = { delta: 1 };
+
+    const { state, newlyCompleted } = updateMissionProgress(this.missions, updates);
+    this.missions = state;
+    saveMissionsState(this.missions);
+
+    // Уведомление о выполненных миссиях
+    if (newlyCompleted.length > 0 && this.pendingResults) {
+      const names = newlyCompleted.map((m) => m.title).join(', ');
+      const reward = newlyCompleted.reduce((sum, m) => sum + m.reward, 0);
+      this.pendingResults = {
+        ...this.pendingResults,
+        note:
+          (this.pendingResults.note ?? '') +
+          `\n🎯 Миссия выполнена: ${names}. +${reward} pulses. Награда ждёт в миссиях.`,
+      };
+    }
+  }
+
+  private getPlayedModes(): Set<string> {
+    try {
+      const raw = localStorage.getItem('pulsefade:played_modes');
+      return new Set(raw ? JSON.parse(raw) : []);
+    } catch {
+      return new Set();
+    }
+  }
+
+  private savePlayedModes(modes: Set<string>): void {
+    try {
+      localStorage.setItem('pulsefade:played_modes', JSON.stringify([...modes]));
+    } catch {
+      /* игнорируем */
+    }
+  }
+
+  private claimMissionsRewards(): void {
+    const unclaimed = completedUnclaimedMissions(this.missions);
+    let totalReward = 0;
+    for (const m of unclaimed) {
+      const updated = claimMissionReward(this.missions, m.id);
+      if (updated) {
+        this.missions = updated;
+        totalReward += m.reward;
+      }
+    }
+    if (totalReward > 0) {
+      saveMissionsState(this.missions);
+      this.platform.grantReward(totalReward);
+      if (this.pendingResults) {
+        this.pendingResults = {
+          ...this.pendingResults,
+          note: `Награда за миссии получена: +${totalReward} pulses.`,
+        };
+      }
+    }
+  }
+
+  private showShop(): void {
+    this.breakAdToken += 1;
+    this.wantsLiveInput = false;
+    this.syncInputState();
+    this.overlay.showCosmetics(this.cosmetics, this.platform.getCurrencyBalance());
+    this.primaryAction = 'shop-buy';
+  }
+
+  private handleShopBuy(itemId: string): void {
+    const item = ALL_COSMETICS.find((c) => c.id === itemId);
+    if (!item || !canBuy(item, this.cosmetics, this.platform.getCurrencyBalance())) return;
+    this.cosmetics = buyCosmetic(item, this.cosmetics);
+    this.cosmetics = selectCosmetic(this.cosmetics, item.category, item.id);
+    saveCosmeticState(this.cosmetics);
+    this.platform.grantReward(-item.price);
+    this.showShop();
+  }
+
+  private showMissionsList(): void {
+    this.breakAdToken += 1;
+    this.wantsLiveInput = false;
+    this.syncInputState();
+    this.overlay.showMissions(this.missions, pendingMissionRewards(this.missions));
+    this.primaryAction = 'claim-missions';
+  }
+
+  private startDailyRound(): void {
+    const seed = dailySeed();
+    this.dailyBestScore = 0;
+    try {
+      const stored = localStorage.getItem('pulsefade:daily_best');
+      if (stored) this.dailyBestScore = parseInt(stored, 10) || 0;
+    } catch {
+      /* игнорируем */
+    }
+    this.startRound('daily', seed);
+  }
+
+  private onDailyFinished(summary: RoundSummary): void {
+    const key = todayKey();
+    const baseReward = dailyReward(key);
+    let totalReward = this.platform.calculateRoundReward(summary.score);
+
+    let note = 'Ежедневное испытание завершено.';
+
+    if (baseReward > 0) {
+      totalReward += baseReward;
+      claimDailyReward(key);
+      note += ` Первая попытка дня: +${baseReward} pulses.`;
+    }
+
+    if (summary.score > this.dailyBestScore) {
+      this.dailyBestScore = summary.score;
+      try {
+        localStorage.setItem('pulsefade:daily_best', String(summary.score));
+      } catch {
+        /* игнорируем */
+      }
+      const bonus = dailyImprovementBonus();
+      if (baseReward > 0) {
+        // Бонус только если это первая попытка (улучшение рекорда в тот же день)
+        totalReward += bonus;
+        note += ` Рекорд дня улучшен: +${bonus} pulses.`;
+      } else {
+        note += ` Рекорд дня: ${summary.score}. Награда дня уже получена.`;
+      }
+    } else if (baseReward === 0) {
+      note += ` Лучший результат дня: ${this.dailyBestScore}. Награда дня уже получена.`;
+    }
+
+    this.platform.recordRound(this.toPlatformRound(summary), totalReward);
+
+    const stats = this.statsOf(summary);
+    stats.push(
+      { label: 'рекорд дня', value: String(this.dailyBestScore) },
+      { label: 'pulses', value: `+${totalReward} · всего ${this.platform.getCurrencyBalance()}` },
+    );
+
+    this.pendingResults = {
+      eyebrow: 'daily',
+      title: 'Ежедневное испытание',
+      note,
+      stats,
+      actions: [
+        { id: 'again', label: 'Ещё раз', primary: true, hint: 'пробел или тап' },
+        ...this.leaderboardActions(),
+        { id: 'modes', label: 'Режимы' },
+      ],
+    };
+    this.showPanel(this.pendingResults);
   }
 
   /** GDD §10: одинаковый seed паттернов у обоих игроков. */

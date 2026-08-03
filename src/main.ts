@@ -1,3 +1,4 @@
+import './ui/style.css';
 import { GameShell } from './app/GameShell';
 import { GAMEPUSH_CONFIG } from './config/gamepush';
 import { createGamePlatform } from './platform/gamepush/createGamePlatform';

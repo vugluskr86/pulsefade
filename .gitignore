@@ -1,4 +1,12 @@
-node_modules
-dist
+node_modules/
+dist/
+release/*.zip
+.env
+.env.local
+.env.*.local
+*.jks
+*.keystore
+*.pem
+pepk.jar
+output.zip
 .DS_Store
-*.local

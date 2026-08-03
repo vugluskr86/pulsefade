@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PULSEFADE GamePush Android build checklist",
+  "type": "object",
+  "required": ["packageId", "version", "title", "icon", "orientation", "fullscreen", "minimumAndroid", "splash"],
+  "properties": {
+    "packageId": { "type": "string", "pattern": "^[a-zA-Z][a-zA-Z0-9_]*(\\.[a-zA-Z][a-zA-Z0-9_]*)+$" },
+    "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:\\.[0-9]+)?$" },
+    "orientation": { "enum": ["portrait", "landscape", "any"] },
+    "fullscreen": { "type": "boolean" },
+    "webViewDebug": { "type": "boolean" },
+    "minimumAndroid": { "type": "string" },
+    "permissions": { "type": "array", "items": { "type": "string" } },
+    "plugins": { "type": "array", "items": { "type": "string" } },
+    "splash": {
+      "type": "object",
+      "required": ["image", "background"],
+      "properties": {
+        "image": { "type": "string" },
+        "background": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}$" }
+      }
+    }
+  }
+}

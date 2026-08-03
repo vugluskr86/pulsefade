@@ -1,4 +1,4 @@
-export type ModeId = 'adaptive' | 'chaos' | 'marathon' | 'zen' | 'duel';
+export type ModeId = 'adaptive' | 'chaos' | 'marathon' | 'zen' | 'duel' | 'daily';
 
 /** Режим — это данные, а не подкласс: новый режим добавляется без правки систем (OCP). */
 export interface ModeDefinition {
@@ -119,6 +119,29 @@ export const MODES: Record<ModeId, ModeDefinition> = {
     failAfterMisses: null,
     duel: true,
   },
+  daily: {
+    id: 'daily',
+    title: 'Daily',
+    subtitle: 'Ежедневная одинаковая последовательность для всех',
+    durationMs: 35_000,
+    baseIntervalMs: 620,
+    minIntervalMs: 420,
+    maxIntervalMs: 820,
+    driftPerBeat: 1,
+    wander: 0.05,
+    patternWeights: CALM_WEIGHTS,
+    eventChance: 0.05,
+    eventsFromBeat: 8,
+    failAfterMisses: null,
+    duel: false,
+  },
 };
 
-export const MODE_ORDER: readonly ModeId[] = ['adaptive', 'chaos', 'marathon', 'zen', 'duel'];
+export const MODE_ORDER: readonly ModeId[] = [
+  'adaptive',
+  'chaos',
+  'marathon',
+  'zen',
+  'duel',
+  'daily',
+];

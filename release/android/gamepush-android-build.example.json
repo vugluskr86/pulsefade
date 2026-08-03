@@ -1,0 +1,22 @@
+{
+  "$schema": "./gamepush-android-build.schema.json",
+  "note": "Справочный шаблон. Значения вручную переносятся в GamePush > Хостинг игр > Android build > Изменить конфиг.",
+  "packageId": "com.yourstudio.pulsefade",
+  "version": "1.0.0",
+  "title": "PULSEFADE",
+  "description": "A minimalist one-tap rhythm arcade about adapting to a fading pulse.",
+  "author": "YOUR STUDIO",
+  "icon": "www/icons/icon-512.png",
+  "orientation": "portrait",
+  "fullscreen": true,
+  "webViewDebug": false,
+  "minimumAndroid": "7.0",
+  "permissions": [],
+  "plugins": ["vibration-if-required-by-builder"],
+  "splash": {
+    "image": "www/icons/loading-logo.png",
+    "background": "#07070F"
+  },
+  "allowedSourceForWebBuild": "https://localhost",
+  "urlWhitelistPolicy": "Leave empty for the first signed test. If enabled later, include every GamePush SDK/API/ad endpoint observed in WebView network logs."
+}

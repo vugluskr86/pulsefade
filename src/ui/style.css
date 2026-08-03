@@ -394,6 +394,63 @@ body {
   accent-color: var(--ember);
 }
 
+/* ---------- Journey ---------- */
+.journey-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.journey-trial {
+  pointer-events: auto;
+  appearance: none;
+  border: 1px solid var(--hair);
+  background: transparent;
+  color: var(--chalk);
+  font-family: var(--mono);
+  padding: 12px 8px 10px;
+  border-radius: 2px;
+  cursor: pointer;
+  text-align: center;
+  position: relative;
+  min-height: 70px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+.journey-trial:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.journey-trial:not(:disabled):hover {
+  border-color: var(--pulse);
+}
+.journey-trial:not(:disabled):active {
+  border-color: var(--ember);
+  transform: translateY(1px);
+}
+
+.journey-trial__num {
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.12em;
+}
+.journey-trial__name {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+.journey-trial__medal {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 14px;
+  line-height: 1;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .grade[data-show='1'] {
     animation-duration: 1ms;

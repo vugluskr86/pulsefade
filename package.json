@@ -1,21 +1,23 @@
 {
   "name": "pulsefade",
+  "version": "1.0.0",
   "private": true,
-  "version": "0.1.0",
   "type": "module",
-  "description": "One-tap rhythm prototype with drifting tempo (WebGL2 + ECS)",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "preview": "vite preview --host",
+    "dev": "vite --host 0.0.0.0",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
+    "test:watch": "vitest",
+    "build": "npm run typecheck && vite build",
+    "verify:gamepush": "node scripts/release/verify-gamepush-build.mjs",
+    "package:gamepush": "npm run typecheck && vite build --mode gamepush && npm run verify:gamepush && node scripts/release/package-gamepush.mjs",
     "deploy": "set VITE_GAMEPUSH_ENABLED=false && npm run build && git add docs/ && git commit -m \"Deploy to GitHub Pages\" && git push",
-    "test:watch": "vitest"
+    "release:android": "npm run package:gamepush"
   },
   "devDependencies": {
-    "typescript": "^5.5.4",
-    "vite": "^5.4.2",
-    "vitest": "^2.0.5"
+    "@types/node": "^22.0.0",
+    "typescript": "^5.8.0",
+    "vite": "^7.0.0",
+    "vitest": "^3.2.0"
   }
 }

@@ -214,3 +214,30 @@ export default defineConfig({
 - https://docs.gamepush.com/docs/sounds/
 - https://docs.gamepush.com/docs/analytics/
 - https://docs.gamepush.com/tutorials/game-testing-checklist/
+
+## 11. Android и Google Play
+
+Для Android используется официальный GamePush builder. Локальная команда:
+
+```bash
+npm run release:android
+```
+
+создаёт `release/pulsefade-gamepush-web.zip`. Затем ZIP загружается в **Хостинг игр**, Android build
+подписывается upload keystore и формирует `.apk`/`.aab`. Полная инструкция:
+
+- `docs/GAMEPUSH_ANDROID_RELEASE_RU.md`;
+- `release/android/gamepush-android-build.example.json`.
+
+В Android config добавить разрешённый источник `https://localhost`, указать icon/splash через пути с
+префиксом `www/`, зафиксировать portrait и включить fullscreen. APK использовать для QA, AAB — для Google Play.
+
+## 12. Платформенные варианты
+
+Перед добавлением каждой площадки сверяться с:
+
+- `docs/PUBLISHING_CONTENT_PLAN_ALL_PLATFORMS_RU.md`;
+- официальным гайдом публикации GamePush;
+- актуальным checklist конкретной площадки.
+
+Не включать leaderboard, ручные трекеры, внешние ссылки и fullscreen UI в сборках, где площадка их запрещает.
