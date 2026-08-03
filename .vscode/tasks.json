@@ -1,0 +1,22 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "dev",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "vite",
+        "pattern": { "regexp": "^$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "VITE",
+          "endsPattern": "ready in"
+        }
+      },
+      "label": "npm: dev"
+    },
+    { "type": "npm", "script": "typecheck", "problemMatcher": ["$tsc"], "label": "npm: typecheck" },
+    { "type": "npm", "script": "test", "problemMatcher": [], "label": "npm: test" }
+  ]
+}

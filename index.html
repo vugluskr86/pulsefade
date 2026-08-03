@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no"
+    />
+    <meta name="theme-color" content="#07070f" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>PULSEFADE</title>
+    <link rel="stylesheet" href="/src/ui/style.css" />
+  </head>
+  <body>
+    <div id="stage">
+      <canvas id="gl"></canvas>
+
+      <div id="hud" class="hud">
+        <div class="hud__top">
+          <div class="readout">
+            <span class="readout__label">score</span>
+            <span class="readout__value" data-hud="score">0</span>
+          </div>
+          <div class="readout readout--right">
+            <span class="readout__label">mult</span>
+            <span class="readout__value" data-hud="multiplier">×1</span>
+          </div>
+        </div>
+
+        <div class="timebar"><i class="timebar__fill" data-hud="time"></i></div>
+
+        <div class="hud__mode" data-hud="mode">adaptive</div>
+
+        <div class="hud__bottom">
+          <div class="combo" data-hud="combo"></div>
+          <div class="tape" data-hud="tape" aria-hidden="true"></div>
+        </div>
+
+        <div class="grade" data-hud="grade"></div>
+        <button class="iconbtn" data-hud="menu" type="button" aria-label="Режимы">≡</button>
+      </div>
+
+      <div id="overlay" class="overlay" hidden></div>
+      <div id="debug" class="debug" hidden></div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

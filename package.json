@@ -1,0 +1,21 @@
+{
+  "name": "pulsefade",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "One-tap rhythm prototype with drifting tempo (WebGL2 + ECS)",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "deploy": "npm run build && git add docs/ && git commit -m \"Deploy to GitHub Pages\" && git push",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "vite": "^5.4.2",
+    "vitest": "^2.0.5"
+  }
+}
