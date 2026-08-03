@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  base: './',
+  base: '/pulsefade/',
   server: {
     // host: true -> открыть прототип с телефона в той же сети
     host: true,
