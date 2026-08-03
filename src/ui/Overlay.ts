@@ -107,7 +107,7 @@ export class Overlay {
     this.root.hidden = false;
   }
 
-  showModes(current: ModeId): void {
+  showModes(current: ModeId, extraActions: readonly ActionItem[] = []): void {
     this.show({
       eyebrow: 'режимы',
       title: 'Выбор режима',
@@ -118,6 +118,7 @@ export class Overlay {
           label: MODES[id].title + (id === current ? ' ·' : ''),
           hint: MODES[id].subtitle,
         })),
+        ...extraActions,
         { id: 'debug', label: 'Настройка окон', hint: 'Правка баланса на лету' },
         { id: 'close', label: 'Назад' },
       ],

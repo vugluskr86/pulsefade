@@ -17,6 +17,7 @@ export class InputRouter implements IInputProvider {
   private readonly clock: GameClock;
   private readonly onFirstInput?: () => void;
   private greeted = false;
+  private enabled = true;
   private readonly keysDown = new Set<string>();
 
   constructor(options: InputRouterOptions) {
@@ -44,6 +45,13 @@ export class InputRouter implements IInputProvider {
     this.keysDown.clear();
   }
 
+  /** Блокирует игровой ввод во время паузы, системного оверлея и рекламы. */
+  setEnabled(enabled: boolean): void {
+    if (this.enabled === enabled) return;
+    this.enabled = enabled;
+    if (!enabled) this.reset();
+  }
+
   dispose(): void {
     this.element.removeEventListener('pointerdown', this.onPointerDown);
     window.removeEventListener('pointerup', this.onPointerUp);
@@ -59,6 +67,7 @@ export class InputRouter implements IInputProvider {
   };
 
   private push(phase: 'down' | 'up', x: number, y: number, nx: number, pointerId: number): void {
+    if (!this.enabled) return;
     if (!this.greeted) {
       this.greeted = true;
       this.onFirstInput?.();
@@ -76,6 +85,10 @@ export class InputRouter implements IInputProvider {
 
   private onPointerDown = (event: PointerEvent): void => {
     if (event.target !== this.element) return;
+    if (!this.enabled) {
+      event.preventDefault();
+      return;
+    }
     event.preventDefault();
     const rect = this.element.getBoundingClientRect();
     const x = event.clientX - rect.left;
@@ -84,6 +97,7 @@ export class InputRouter implements IInputProvider {
   };
 
   private onPointerUp = (event: PointerEvent): void => {
+    if (!this.enabled) return;
     const rect = this.element.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
@@ -98,6 +112,7 @@ export class InputRouter implements IInputProvider {
   }
 
   private onKeyDown = (event: KeyboardEvent): void => {
+    if (!this.enabled) return;
     const side = this.keyToSide(event.code);
     if (side === null || event.repeat) return;
     event.preventDefault();
@@ -107,6 +122,7 @@ export class InputRouter implements IInputProvider {
   };
 
   private onKeyUp = (event: KeyboardEvent): void => {
+    if (!this.enabled) return;
     const side = this.keyToSide(event.code);
     if (side === null || !this.keysDown.has(event.code)) return;
     this.keysDown.delete(event.code);

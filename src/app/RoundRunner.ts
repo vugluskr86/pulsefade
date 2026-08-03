@@ -54,6 +54,7 @@ export interface RoundSummary {
   readonly score: number;
   readonly bestCombo: number;
   readonly perfectRatio: number;
+  readonly perfects: number;
   readonly misses: number;
   readonly judged: number;
   readonly reason: RoundEndReason | null;
@@ -155,6 +156,7 @@ export class RoundRunner {
       score: score.score,
       bestCombo: score.bestCombo,
       perfectRatio: accuracyOf(score),
+      perfects: score.counts.perfect,
       misses: score.counts.miss,
       judged: score.judged,
       reason: this.ctx.round.reason,
