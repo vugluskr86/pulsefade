@@ -2,6 +2,7 @@ import { MODES, MODE_ORDER, type ModeId } from '../config/modes';
 import { JOURNEY_TRIALS, type Medal, type JourneyState } from '../config/journey';
 import { WEEKLY_MISSIONS, type MissionsState } from '../config/missions';
 import { ALL_COSMETICS, type CosmeticState, type CosmeticItem } from '../config/cosmetics';
+import { t, fmt } from '../i18n/locale';
 
 export interface StatItem {
   label: string;
@@ -117,11 +118,11 @@ export class Overlay {
     const header = document.createElement('header');
     const eyebrow = document.createElement('div');
     eyebrow.className = 'panel__eyebrow';
-    eyebrow.textContent = 'journey';
+    eyebrow.textContent = t('journey.title');
     const title = document.createElement('h1');
     title.className = 'panel__title';
     const completed = state.trials.filter((t) => t.bestMedal !== 'none').length;
-    title.textContent = `Испытания (${completed}/${JOURNEY_TRIALS.length})`;
+    title.textContent = fmt('journey.trials', { completed, total: JOURNEY_TRIALS.length });
     header.append(eyebrow, title);
     fragment.append(header);
 
@@ -144,7 +145,7 @@ export class Overlay {
 
       const name = document.createElement('span');
       name.className = 'journey-trial__name';
-      name.textContent = unlocked ? trial.title : '???';
+      name.textContent = unlocked ? t(trial.titleKey) : '???';
 
       const medalIcon = this.medalIcon(progress.bestMedal);
       if (medalIcon) {
@@ -168,9 +169,9 @@ export class Overlay {
       playBtn.type = 'button';
       playBtn.className = 'btn btn--primary';
       playBtn.dataset.action = `journey:${nextTrial.id}`;
-      playBtn.textContent = 'Играть следующее';
+      playBtn.textContent = t('journey.playNext');
       const hint = document.createElement('small');
-      hint.textContent = `#${nextTrial.id} · ${nextTrial.title}`;
+      hint.textContent = `#${nextTrial.id} · ${t(nextTrial.titleKey)}`;
       playBtn.append(hint);
       actions.append(playBtn);
     }
@@ -179,7 +180,7 @@ export class Overlay {
     backBtn.type = 'button';
     backBtn.className = 'btn';
     backBtn.dataset.action = 'modes';
-    backBtn.textContent = 'Режимы';
+    backBtn.textContent = t('result.modes');
     actions.append(backBtn);
 
     fragment.append(actions);
@@ -198,10 +199,10 @@ export class Overlay {
   ): void {
     const trial = JOURNEY_TRIALS[trialId - 1];
     const medalLabels: Record<Medal, string> = {
-      none: 'Не пройдено',
-      bronze: 'Bronze',
-      silver: 'Silver',
-      gold: 'Gold',
+      none: t('journey.none'),
+      bronze: t('medal.bronze'),
+      silver: t('medal.silver'),
+      gold: t('medal.gold'),
     };
     const medalIcons: Record<Medal, string> = { none: '', bronze: '🥉', silver: '🥈', gold: '🥇' };
     const isNewBest =
@@ -211,18 +212,18 @@ export class Overlay {
           { none: 0, bronze: 1, silver: 2, gold: 3 }[bestMedal]);
 
     this.show({
-      eyebrow: `испытание ${trialId}`,
-      title: trial?.title ?? `Испытание ${trialId}`,
+      eyebrow: fmt('journey.result.title', { id: trialId }),
+      title: trial ? t(trial.titleKey) : fmt('journey.result.title', { id: trialId }),
       note: isNewBest
-        ? `${medalIcons[medal]} Новый рекорд: ${medalLabels[medal]}!`
+        ? fmt('journey.newRecord', { icon: medalIcons[medal], medal: medalLabels[medal] })
         : medal !== 'none'
           ? `${medalIcons[medal]} ${medalLabels[medal]}`
-          : 'Попробуй ещё раз, чтобы получить медаль.',
+          : t('journey.retry'),
       stats: [
-        { label: 'score', value: String(score), hot: true },
-        { label: 'perfect', value: `${Math.round(perfectRatio * 100)}%` },
+        { label: t('journey.medal.score'), value: String(score), hot: true },
+        { label: t('journey.medal.perfect'), value: `${Math.round(perfectRatio * 100)}%` },
         {
-          label: 'медаль',
+          label: t('journey.medal.label'),
           value: `${medalIcons[medal]} ${medalLabels[medal]}`,
           hot: medal !== 'none',
         },
@@ -250,11 +251,11 @@ export class Overlay {
     const header = document.createElement('header');
     const eyebrow = document.createElement('div');
     eyebrow.className = 'panel__eyebrow';
-    eyebrow.textContent = 'миссии';
+    eyebrow.textContent = t('missions.title');
     const title = document.createElement('h1');
     title.className = 'panel__title';
     const completed = state.progress.filter((p) => p.completed).length;
-    title.textContent = `Миссии (${completed}/${WEEKLY_MISSIONS.length})`;
+    title.textContent = fmt('missions.heading', { completed, total: WEEKLY_MISSIONS.length });
     header.append(eyebrow, title);
     fragment.append(header);
 
@@ -270,11 +271,11 @@ export class Overlay {
       const name = document.createElement('div');
       name.style.cssText =
         'font-family:var(--mono); font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:var(--chalk);';
-      name.textContent = def.title;
+      name.textContent = t(def.titleKey);
 
       const desc = document.createElement('div');
       desc.style.cssText = 'font-size:10px; color:var(--muted); margin-top:2px;';
-      desc.textContent = `${def.description} · +${def.reward} pulses`;
+      desc.textContent = `${t(def.descKey)} · +${def.reward} pulses`;
 
       const bar = document.createElement('div');
       bar.style.cssText = 'height:3px; background:var(--hair); margin-top:6px; border-radius:1px;';
@@ -291,8 +292,8 @@ export class Overlay {
       const status = document.createElement('span');
       status.textContent = progress.completed
         ? progress.rewardClaimed
-          ? '✓ получено'
-          : 'награда ждёт'
+          ? t('missions.done')
+          : t('missions.waiting')
         : '';
       meta.append(count, status);
 
@@ -308,14 +309,14 @@ export class Overlay {
       claimBtn.type = 'button';
       claimBtn.className = 'btn btn--primary';
       claimBtn.dataset.action = 'claim-missions';
-      claimBtn.textContent = `Забрать награду (+${pendingReward} pulses)`;
+      claimBtn.textContent = fmt('missions.claim', { reward: pendingReward });
       actions.append(claimBtn);
     }
     const backBtn = document.createElement('button');
     backBtn.type = 'button';
     backBtn.className = 'btn';
     backBtn.dataset.action = 'modes';
-    backBtn.textContent = 'Режимы';
+    backBtn.textContent = t('result.modes');
     actions.append(backBtn);
 
     fragment.append(actions);
@@ -325,19 +326,28 @@ export class Overlay {
 
   showCosmetics(state: CosmeticState, balance: number): void {
     const categories: { title: string; items: readonly CosmeticItem[] }[] = [
-      { title: 'Палитры', items: ALL_COSMETICS.filter((c) => c.category === 'palette') },
-      { title: 'Частицы', items: ALL_COSMETICS.filter((c) => c.category === 'particles') },
-      { title: 'Звук', items: ALL_COSMETICS.filter((c) => c.category === 'sound') },
+      {
+        title: t('shop.category.palettes'),
+        items: ALL_COSMETICS.filter((c) => c.category === 'palette'),
+      },
+      {
+        title: t('shop.category.particles'),
+        items: ALL_COSMETICS.filter((c) => c.category === 'particles'),
+      },
+      {
+        title: t('shop.category.sound'),
+        items: ALL_COSMETICS.filter((c) => c.category === 'sound'),
+      },
     ];
 
     const fragment = document.createDocumentFragment();
     const header = document.createElement('header');
     const eyebrow = document.createElement('div');
     eyebrow.className = 'panel__eyebrow';
-    eyebrow.textContent = 'магазин';
+    eyebrow.textContent = t('shop.title');
     const title = document.createElement('h1');
     title.className = 'panel__title';
-    title.textContent = `Косметика · ${balance} pulses`;
+    title.textContent = fmt('shop.heading', { balance });
     header.append(eyebrow, title);
     fragment.append(header);
 
@@ -364,10 +374,10 @@ export class Overlay {
         const itemName = document.createElement('div');
         itemName.style.cssText =
           'font-family:var(--mono); font-size:10px; letter-spacing:0.1em; color:var(--chalk);';
-        itemName.textContent = item.title + (selected ? ' ·' : '');
+        itemName.textContent = t(item.titleKey) + (selected ? ' ·' : '');
         const itemDesc = document.createElement('div');
         itemDesc.style.cssText = 'font-size:9px; color:var(--muted);';
-        itemDesc.textContent = item.description;
+        itemDesc.textContent = t(item.descKey);
         info.append(itemName, itemDesc);
 
         const action = document.createElement('button');
@@ -376,7 +386,7 @@ export class Overlay {
         action.style.cssText =
           'padding:6px 12px; font-size:10px; min-width:70px; text-align:center;';
         if (owned) {
-          action.textContent = selected ? 'выбрано' : 'исп.';
+          action.textContent = selected ? t('shop.selected') : t('shop.use');
           if (!selected) action.dataset.action = `cosmetic:${item.id}`;
           else action.disabled = true;
         } else {
@@ -395,7 +405,7 @@ export class Overlay {
     backBtn.type = 'button';
     backBtn.className = 'btn';
     backBtn.dataset.action = 'modes';
-    backBtn.textContent = 'Режимы';
+    backBtn.textContent = t('result.modes');
     const actions = document.createElement('div');
     actions.className = 'actions';
     actions.append(backBtn);
@@ -405,20 +415,47 @@ export class Overlay {
     this.root.hidden = false;
   }
 
+  showStats(
+    journey: JourneyState,
+    missions: MissionsState,
+    cosmetics: CosmeticState,
+    balance: number,
+  ): void {
+    const journeyCompleted = journey.trials.filter((t) => t.bestMedal !== 'none').length;
+    const missionsCompleted = missions.progress.filter((p) => p.completed).length;
+    const ownedCount = cosmetics.owned.length;
+
+    this.show({
+      eyebrow: t('stats.eyebrow'),
+      title: t('stats.title'),
+      stats: [
+        {
+          label: t('journey.title'),
+          value: `${journeyCompleted}/${JOURNEY_TRIALS.length}`,
+          hot: journeyCompleted > 0,
+        },
+        { label: t('missions.title'), value: `${missionsCompleted}/${WEEKLY_MISSIONS.length}` },
+        { label: t('shop.title'), value: String(ownedCount) },
+        { label: t('result.pulses'), value: String(balance), hot: true },
+      ],
+      actions: [{ id: 'close', label: t('menu.back') }],
+    });
+  }
+
   showModes(current: ModeId, extraActions: readonly ActionItem[] = []): void {
     this.show({
-      eyebrow: 'режимы',
-      title: 'Выбор режима',
-      note: 'Последовательность паттернов зависит от seed — в Duel она одинакова для обоих игроков.',
+      eyebrow: t('menu.eyebrow'),
+      title: t('menu.modes'),
+      note: t('menu.modesNote'),
       actions: [
         ...MODE_ORDER.map((id) => ({
           id: `mode:${id}`,
           label: MODES[id].title + (id === current ? ' ·' : ''),
-          hint: MODES[id].subtitle,
+          hint: t(MODES[id].subtitleKey),
         })),
         ...extraActions,
-        { id: 'debug', label: 'Настройка окон', hint: 'Правка баланса на лету' },
-        { id: 'close', label: 'Назад' },
+        { id: 'debug', label: t('menu.debug'), hint: t('menu.debugHint') },
+        { id: 'close', label: t('menu.back') },
       ],
     });
   }

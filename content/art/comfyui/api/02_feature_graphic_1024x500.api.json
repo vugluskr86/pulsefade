@@ -1,0 +1,139 @@
+{
+  "1": {
+    "class_type": "UNETLoader",
+    "inputs": {
+      "unet_name": "flux1-schnell.safetensors",
+      "weight_dtype": "default"
+    }
+  },
+  "2": {
+    "class_type": "DualCLIPLoader",
+    "inputs": {
+      "clip_name1": "t5xxl_fp8_e4m3fn.safetensors",
+      "clip_name2": "clip_l.safetensors",
+      "type": "flux"
+    }
+  },
+  "3": {
+    "class_type": "VAELoader",
+    "inputs": {
+      "vae_name": "ae.safetensors"
+    }
+  },
+  "4": {
+    "class_type": "CLIPTextEncode",
+    "inputs": {
+      "text": "PULSEFADE game key art, minimalist futuristic rhythm arcade, abstract geometric graphic design, deep near-black burgundy background, luminous cyan #6FE5FF, warm amber #FFB044 and restrained magenta #D24367 accents, concentric pulse rings, precise circular target, tiny rhythmic tick marks, subtle bloom, crisp edges, premium mobile game marketing art, high contrast, lots of clean negative space, no people, no characters, no musical instruments, no readable text, no letters, no logos, no watermark, wide store feature graphic, dominant glowing pulse arc entering from the right, compact target slightly right of center, left 42 percent intentionally quiet and dark for title placement, elegant controlled glow",
+      "clip": [
+        "2",
+        0
+      ]
+    }
+  },
+  "5": {
+    "class_type": "ModelSamplingFlux",
+    "inputs": {
+      "max_shift": 1.15,
+      "base_shift": 0.5,
+      "width": 1536,
+      "height": 768,
+      "model": [
+        "1",
+        0
+      ]
+    }
+  },
+  "6": {
+    "class_type": "BasicGuider",
+    "inputs": {
+      "model": [
+        "5",
+        0
+      ],
+      "conditioning": [
+        "4",
+        0
+      ]
+    }
+  },
+  "7": {
+    "class_type": "RandomNoise",
+    "inputs": {
+      "noise_seed": 351903
+    }
+  },
+  "8": {
+    "class_type": "KSamplerSelect",
+    "inputs": {
+      "sampler_name": "euler"
+    }
+  },
+  "9": {
+    "class_type": "BasicScheduler",
+    "inputs": {
+      "scheduler": "simple",
+      "steps": 4,
+      "denoise": 1.0,
+      "model": [
+        "5",
+        0
+      ]
+    }
+  },
+  "10": {
+    "class_type": "EmptySD3LatentImage",
+    "inputs": {
+      "width": 1536,
+      "height": 768,
+      "batch_size": 1
+    }
+  },
+  "11": {
+    "class_type": "SamplerCustomAdvanced",
+    "inputs": {
+      "noise": [
+        "7",
+        0
+      ],
+      "guider": [
+        "6",
+        0
+      ],
+      "sampler": [
+        "8",
+        0
+      ],
+      "sigmas": [
+        "9",
+        0
+      ],
+      "latent_image": [
+        "10",
+        0
+      ]
+    }
+  },
+  "12": {
+    "class_type": "VAEDecode",
+    "inputs": {
+      "samples": [
+        "11",
+        0
+      ],
+      "vae": [
+        "3",
+        0
+      ]
+    }
+  },
+  "13": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "filename_prefix": "PULSEFADE/feature",
+      "images": [
+        "12",
+        0
+      ]
+    }
+  }
+}

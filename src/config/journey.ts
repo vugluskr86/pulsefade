@@ -4,8 +4,8 @@ export type Medal = 'none' | 'bronze' | 'silver' | 'gold';
 
 export interface JourneyTrial {
   readonly id: number;
-  readonly title: string;
-  readonly description: string;
+  readonly titleKey: string;
+  readonly descKey: string;
   /** ID режима-основы (обычно 'adaptive'). */
   readonly baseMode: ModeId;
   readonly seed: number;
@@ -49,8 +49,8 @@ export const JOURNEY_TRIALS: readonly JourneyTrial[] = [
   // ── 1–4: вводные ──────────────────────────────────────────
   {
     id: 1,
-    title: 'Первый импульс',
-    description: 'Стабильный ритм, широкое окно PERFECT. Почувствуй ритм.',
+    titleKey: 'journey.1.title',
+    descKey: 'journey.1.desc',
     baseMode: 'adaptive',
     seed: 1001,
     durationSec: 30,
@@ -61,8 +61,8 @@ export const JOURNEY_TRIALS: readonly JourneyTrial[] = [
   },
   {
     id: 2,
-    title: 'Ускорение',
-    description: 'Плавное нарастание темпа. Следи за скоростью кольца.',
+    titleKey: 'journey.2.title',
+    descKey: 'journey.2.desc',
     baseMode: 'adaptive',
     seed: 1002,
     durationSec: 30,
@@ -73,8 +73,8 @@ export const JOURNEY_TRIALS: readonly JourneyTrial[] = [
   },
   {
     id: 3,
-    title: 'Пауза',
-    description: 'Замедления и внезапные паузы. Доверяй цвету кольца.',
+    titleKey: 'journey.3.title',
+    descKey: 'journey.3.desc',
     baseMode: 'adaptive',
     seed: 1003,
     durationSec: 32,
@@ -85,8 +85,8 @@ export const JOURNEY_TRIALS: readonly JourneyTrial[] = [
   },
   {
     id: 4,
-    title: 'Двойной удар',
-    description: 'Сдвоенные импульсы. Готовься нажимать дважды.',
+    titleKey: 'journey.4.title',
+    descKey: 'journey.4.desc',
     baseMode: 'adaptive',
     seed: 1004,
     durationSec: 32,
@@ -99,8 +99,8 @@ export const JOURNEY_TRIALS: readonly JourneyTrial[] = [
   // ── 5–8: серии и множитель ─────────────────────────────────
   {
     id: 5,
-    title: 'Серия',
-    description: 'Удержи combo для ×2 множителя. MISS сбрасывает прогресс.',
+    titleKey: 'journey.5.title',
+    descKey: 'journey.5.desc',
     baseMode: 'adaptive',
     seed: 1005,
     durationSec: 35,
@@ -111,8 +111,8 @@ export const JOURNEY_TRIALS: readonly JourneyTrial[] = [
   },
   {
     id: 6,
-    title: 'Смена темпа',
-    description: 'Резкие переходы от быстрого к медленному. Не теряй серию.',
+    titleKey: 'journey.6.title',
+    descKey: 'journey.6.desc',
     baseMode: 'adaptive',
     seed: 1006,
     durationSec: 35,
@@ -123,8 +123,8 @@ export const JOURNEY_TRIALS: readonly JourneyTrial[] = [
   },
   {
     id: 7,
-    title: 'Каскад',
-    description: 'Комбинированные ускорения. Держи ритм в быстрой смене паттернов.',
+    titleKey: 'journey.7.title',
+    descKey: 'journey.7.desc',
     baseMode: 'adaptive',
     seed: 1007,
     durationSec: 35,
@@ -135,8 +135,8 @@ export const JOURNEY_TRIALS: readonly JourneyTrial[] = [
   },
   {
     id: 8,
-    title: 'Выдержка',
-    description: 'Длинные паузы между сериями. Не теряй концентрацию.',
+    titleKey: 'journey.8.title',
+    descKey: 'journey.8.desc',
     baseMode: 'adaptive',
     seed: 1008,
     durationSec: 38,
@@ -149,8 +149,8 @@ export const JOURNEY_TRIALS: readonly JourneyTrial[] = [
   // ── 9–12: смешанные паттерны ───────────────────────────────
   {
     id: 9,
-    title: 'Двойной темп',
-    description: 'Double-beat и ускорения вместе. Реакция на пределе.',
+    titleKey: 'journey.9.title',
+    descKey: 'journey.9.desc',
     baseMode: 'adaptive',
     seed: 1009,
     durationSec: 35,
@@ -161,8 +161,8 @@ export const JOURNEY_TRIALS: readonly JourneyTrial[] = [
   },
   {
     id: 10,
-    title: 'Обман',
-    description: 'Ложные замедления и неожиданные ускорения. Не дай себя обмануть.',
+    titleKey: 'journey.10.title',
+    descKey: 'journey.10.desc',
     baseMode: 'adaptive',
     seed: 1010,
     durationSec: 38,
@@ -173,8 +173,8 @@ export const JOURNEY_TRIALS: readonly JourneyTrial[] = [
   },
   {
     id: 11,
-    title: 'Выбор',
-    description: 'Два центра и замедления. Выбирай сторону и попадай в ритм.',
+    titleKey: 'journey.11.title',
+    descKey: 'journey.11.desc',
     baseMode: 'adaptive',
     seed: 1011,
     durationSec: 40,
@@ -185,8 +185,8 @@ export const JOURNEY_TRIALS: readonly JourneyTrial[] = [
   },
   {
     id: 12,
-    title: 'Финал',
-    description: 'Все типы паттернов и событий. Твоё главное испытание.',
+    titleKey: 'journey.12.title',
+    descKey: 'journey.12.desc',
     baseMode: 'adaptive',
     seed: 1012,
     durationSec: 45,

@@ -1,0 +1,246 @@
+import { registerLocale } from './locale';
+
+registerLocale('ru', {
+  // ── Modes ──
+  'mode.adaptive': 'Adaptive',
+  'mode.adaptive.desc': 'Стандартный меняющийся темп',
+  'mode.chaos': 'Chaos',
+  'mode.chaos.desc': 'Резкие, но телеграфированные смены',
+  'mode.marathon': 'Marathon',
+  'mode.marathon.desc': 'Постоянное ускорение, три промаха — конец',
+  'mode.zen': 'Zen',
+  'mode.zen.desc': 'Без поражения, только точность',
+  'mode.duel': 'Duel',
+  'mode.duel.desc': 'Одинаковая последовательность паттернов у двух игроков',
+  'mode.daily': 'Daily',
+  'mode.daily.desc': 'Ежедневная одинаковая последовательность для всех',
+
+  // ── HUD ──
+  'hud.score': 'score',
+  'hud.combo': 'combo',
+  'hud.multiplier': 'multiplier',
+
+  // ── Result ──
+  'result.time': 'Раунд завершён',
+  'result.fail': 'Три промаха',
+  'result.stopped': 'Остановлено',
+  'result.replayFinished': 'Повтор завершён',
+  'result.score': 'score',
+  'result.bestCombo': 'макс. серия',
+  'result.perfect': 'perfect',
+  'result.misses': 'промахи',
+  'result.perfectRatio': 'perfect',
+  'result.pulses': 'pulses',
+  'result.again': 'Ещё раз',
+  'result.againHint': 'пробел или тап',
+  'result.replay': 'Повтор лучшей серии',
+  'result.replayHint': '{streak} ударов подряд',
+  'result.modes': 'Режимы',
+  'result.leaderboard': 'Таблица лидеров',
+  'result.leaderboardHint': 'лучшие результаты Adaptive',
+  'result.rewardedNote': 'Можно удвоить заработанные pulses за просмотр рекламы.',
+  'result.rewardedBtn': '×2 PULSES · РЕКЛАМА',
+  'result.rewardedHint': 'ещё +{reward}',
+
+  // ── Rewarded states ──
+  'rewarded.loading': 'Загрузка рекламы...',
+  'rewarded.nofill': 'Реклама сейчас недоступна',
+  'rewarded.cancel': 'Реклама закрыта',
+  'rewarded.granted': 'Награда удвоена: +{reward} pulses',
+  'rewarded.syncFail': 'Синхронизация временно недоступна',
+
+  // ── Pause ──
+  'pause.title': 'Продолжить раунд',
+  'pause.note': 'Таймер, импульсы и ввод были остановлены, пока вкладка не была активна.',
+  'pause.resume': 'Продолжить',
+  'pause.resumeHint': 'пробел или тап',
+
+  // ── Duel ──
+  'duel.round1': 'duel · 1 / 2',
+  'duel.player2': 'Игрок 2, ваш ход',
+  'duel.note': 'Последовательность паттернов будет та же — сравнивается только исполнение.',
+  'duel.start': 'Начать',
+  'duel.result': 'duel · итог',
+  'duel.win1': 'Побеждает игрок 1',
+  'duel.win2': 'Побеждает игрок 2',
+  'duel.draw': 'Ничья',
+  'duel.player1': 'Игрок 1',
+  'duel.again': 'Ещё раз',
+  'duel.againHint': 'новый seed',
+
+  // ── Journey ──
+  'journey.title': 'journey',
+  'journey.trials': 'Испытания ({completed}/{total})',
+  'journey.playNext': 'Играть следующее',
+  'journey.result.title': 'испытание {id}',
+  'journey.newRecord': '{icon} Новый рекорд: {medal}!',
+  'journey.retry': 'Попробуй ещё раз, чтобы получить медаль.',
+  'journey.again': 'Ещё раз',
+  'journey.againHint': 'улучшить результат',
+  'journey.next': 'Дальше → #{id}',
+  'journey.all': 'Все испытания',
+  'journey.none': 'Не пройдено',
+  'journey.medal.score': 'score',
+  'journey.medal.perfect': 'perfect',
+  'journey.medal.label': 'медаль',
+  'journey.menuLabel': 'Испытания Journey',
+  'journey.menuHint': '{completed}/{total} пройдено',
+
+  // ── Daily ──
+  'daily.title': 'daily',
+  'daily.heading': 'Ежедневное испытание',
+  'daily.done': 'Ежедневное испытание завершено.',
+  'daily.firstReward': ' Первая попытка дня: +{reward} pulses.',
+  'daily.best': ' Лучший результат дня: {score}. Награда дня уже получена.',
+  'daily.improved': ' Рекорд дня улучшен: +{bonus} pulses.',
+  'daily.record': ' Рекорд дня: {score}. Награда дня уже получена.',
+  'daily.bestLabel': 'рекорд дня',
+
+  // ── Missions ──
+  'missions.title': 'миссии',
+  'missions.heading': 'Миссии ({completed}/{total})',
+  'missions.claim': 'Забрать награду (+{reward} pulses)',
+  'missions.done': '✓ получено',
+  'missions.waiting': 'награда ждёт',
+  'missions.completeNote':
+    '🎯 Миссия выполнена: {names}. +{reward} pulses. Награда ждёт в миссиях.',
+  'missions.receivedNote': 'Награда за миссии получена: +{total} pulses.',
+
+  // ── Shop ──
+  'shop.title': 'магазин',
+  'shop.heading': 'Косметика · {balance} pulses',
+  'shop.category.palettes': 'Палитры',
+  'shop.category.particles': 'Частицы',
+  'shop.category.sound': 'Звук',
+  'shop.selected': 'выбрано',
+  'shop.use': 'исп.',
+  'shop.bought': 'куплено',
+
+  // ── Misc ──
+  'menu.modes': 'Выбор режима',
+  'menu.modesNote':
+    'Последовательность паттернов зависит от seed — в Duel она одинакова для обоих игроков.',
+  'menu.back': 'Назад',
+  'menu.debug': 'Настройка окон',
+  'menu.debugHint': 'Правка баланса на лету',
+  'menu.shop': 'Магазин',
+  'menu.missions': 'Миссии',
+
+  // ── Journey Trials ──
+  'journey.1.title': 'Первый импульс',
+  'journey.1.desc': 'Стабильный ритм, широкое окно PERFECT. Почувствуй ритм.',
+  'journey.2.title': 'Ускорение',
+  'journey.2.desc': 'Плавное нарастание темпа. Следи за скоростью кольца.',
+  'journey.3.title': 'Пауза',
+  'journey.3.desc': 'Замедления и внезапные паузы. Доверяй цвету кольца.',
+  'journey.4.title': 'Двойной удар',
+  'journey.4.desc': 'Сдвоенные импульсы. Готовься нажимать дважды.',
+  'journey.5.title': 'Серия',
+  'journey.5.desc': 'Удержи combo для ×2 множителя. MISS сбрасывает прогресс.',
+  'journey.6.title': 'Смена темпа',
+  'journey.6.desc': 'Резкие переходы от быстрого к медленному. Не теряй серию.',
+  'journey.7.title': 'Каскад',
+  'journey.7.desc': 'Комбинированные ускорения. Держи ритм в быстрой смене паттернов.',
+  'journey.8.title': 'Выдержка',
+  'journey.8.desc': 'Длинные паузы между сериями. Не теряй концентрацию.',
+  'journey.9.title': 'Двойной темп',
+  'journey.9.desc': 'Double-beat и ускорения вместе. Реакция на пределе.',
+  'journey.10.title': 'Обман',
+  'journey.10.desc': 'Ложные замедления и неожиданные ускорения. Не дай себя обмануть.',
+  'journey.11.title': 'Выбор',
+  'journey.11.desc': 'Два центра и замедления. Выбирай сторону и попадай в ритм.',
+  'journey.12.title': 'Финал',
+  'journey.12.desc': 'Все типы паттернов и событий. Твоё главное испытание.',
+
+  // ── Mission Definitions ──
+  'missions.perfect_25.title': 'Меткий стрелок',
+  'missions.perfect_25.desc': 'Сделать 25 PERFECT',
+  'missions.combo_20.title': 'На волне',
+  'missions.combo_20.desc': 'Удержать серию 20',
+  'missions.flawless.title': 'Безупречно',
+  'missions.flawless.desc': 'Пройти раунд без MISS',
+  'missions.modes_3.title': 'Разнообразие',
+  'missions.modes_3.desc': 'Сыграть 3 разных режима',
+  'missions.beat_record.title': 'Превзойти себя',
+  'missions.beat_record.desc': 'Улучшить личный рекорд',
+  'missions.replay_watch.title': 'Киноман',
+  'missions.replay_watch.desc': 'Посмотреть повтор лучшей серии',
+  'missions.rounds_5.title': 'Марафонец',
+  'missions.rounds_5.desc': 'Завершить 5 раундов',
+
+  // ── Cosmetics ──
+  'cosmetic.palette_default.title': 'Стандарт',
+  'cosmetic.palette_default.desc': 'Сине-фиолетовая палитра по умолчанию',
+  'cosmetic.palette_fire.title': 'Огонь',
+  'cosmetic.palette_fire.desc': 'Оранжево-красные тона',
+  'cosmetic.palette_ice.title': 'Лёд',
+  'cosmetic.palette_ice.desc': 'Голубо-белые холодные тона',
+  'cosmetic.palette_toxic.title': 'Токсин',
+  'cosmetic.palette_toxic.desc': 'Зелёно-жёлтые кислотные тона',
+  'cosmetic.palette_night.title': 'Ночь',
+  'cosmetic.palette_night.desc': 'Тёмно-синие глубокие тона',
+  'cosmetic.palette_neon.title': 'Неон',
+  'cosmetic.palette_neon.desc': 'Розово-циановые яркие тона',
+  'cosmetic.particles_default.title': 'Импульсы',
+  'cosmetic.particles_default.desc': 'Стандартные частицы',
+  'cosmetic.particles_spark.title': 'Искры',
+  'cosmetic.particles_spark.desc': 'Яркие искры при попадании',
+  'cosmetic.particles_rings.title': 'Кольца',
+  'cosmetic.particles_rings.desc': 'Расходящиеся кольца при PERFECT',
+  'cosmetic.particles_void.title': 'Пустота',
+  'cosmetic.particles_void.desc': 'Тёмные частицы с фиолетовым свечением',
+  'cosmetic.sound_default.title': 'Щелчки',
+  'cosmetic.sound_default.desc': 'Стандартные синтезированные щелчки',
+  'cosmetic.sound_chime.title': 'Колокольчики',
+  'cosmetic.sound_chime.desc': 'Мелодичные перезвоны',
+  'cosmetic.sound_techno.title': 'Техно',
+  'cosmetic.sound_techno.desc': 'Электронные ритмичные щелчки',
+
+  // ── Result stats ──
+  'stats.score': 'score',
+  'stats.bestCombo': 'макс. серия',
+  'stats.perfect': 'perfect',
+  'stats.misses': 'промахи',
+  'stats.pulses': 'pulses',
+  'stats.bestRecord': 'рекорд дня',
+
+  // ── Result extras ──
+  'result.rewardedGranted': 'Награда удвоена: +{reward} pulses за этот раунд.',
+  'result.rewardedFail':
+    'Реклама сейчас недоступна или была закрыта. Базовая награда уже сохранена.',
+  'result.rewardedSyncNote': 'Можно удвоить заработанные pulses за просмотр рекламы.',
+
+  // ── System ──
+  'sys.error.webgl': 'Нужен WebGL2',
+  'sys.error.startup': 'ошибка запуска',
+  'sys.error.markup': 'Разметка страницы повреждена',
+
+  // ── Duel stats ──
+  'duel.stats.series': 'серия · {player}',
+  'duel.stats.perfect': 'perfect · {player}',
+  'duel.stats.score': 'score',
+  'duel.stats.bestCombo': 'макс. серия',
+  'duel.stats.perfectRatio': 'perfect',
+  'duel.stats.misses': 'промахи',
+  'duel.back': 'Режимы',
+  'duel.replay': 'Повтор лучшей серии',
+  'duel.leaderboard': 'Таблица лидеров',
+  'duel.leaderboardHint': 'лучшие результаты Adaptive',
+  'duel.modes': 'Режимы',
+
+  // ── Medals ──
+  'medal.bronze': 'Bronze',
+  'medal.silver': 'Silver',
+  'medal.gold': 'Gold',
+
+  // ── Menu ──
+  'menu.eyebrow': 'режимы',
+
+  // ── Stats ──
+  'stats.eyebrow': 'статистика',
+  'stats.title': 'Статистика',
+  'stats.hint': 'Journey, миссии, косметика',
+
+  // ── Pause ──
+  'pause.eyebrow': 'пауза',
+});

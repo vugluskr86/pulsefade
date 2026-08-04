@@ -3,8 +3,8 @@ export type CosmeticCategory = 'palette' | 'particles' | 'sound';
 export interface CosmeticItem {
   readonly id: string;
   readonly category: CosmeticCategory;
-  readonly title: string;
-  readonly description: string;
+  readonly titleKey: string;
+  readonly descKey: string;
   readonly price: number;
 }
 
@@ -22,43 +22,43 @@ export const PALETTES: readonly CosmeticItem[] = [
   {
     id: 'palette_default',
     category: 'palette',
-    title: 'Стандарт',
-    description: 'Сине-фиолетовая палитра по умолчанию',
+    titleKey: 'cosmetic.palette_default.title',
+    descKey: 'cosmetic.palette_default.desc',
     price: 0,
   },
   {
     id: 'palette_fire',
     category: 'palette',
-    title: 'Огонь',
-    description: 'Оранжево-красные тона',
+    titleKey: 'cosmetic.palette_fire.title',
+    descKey: 'cosmetic.palette_fire.desc',
     price: 500,
   },
   {
     id: 'palette_ice',
     category: 'palette',
-    title: 'Лёд',
-    description: 'Голубо-белые холодные тона',
+    titleKey: 'cosmetic.palette_ice.title',
+    descKey: 'cosmetic.palette_ice.desc',
     price: 800,
   },
   {
     id: 'palette_toxic',
     category: 'palette',
-    title: 'Токсин',
-    description: 'Зелёно-жёлтые кислотные тона',
+    titleKey: 'cosmetic.palette_toxic.title',
+    descKey: 'cosmetic.palette_toxic.desc',
     price: 1000,
   },
   {
     id: 'palette_night',
     category: 'palette',
-    title: 'Ночь',
-    description: 'Тёмно-синие глубокие тона',
+    titleKey: 'cosmetic.palette_night.title',
+    descKey: 'cosmetic.palette_night.desc',
     price: 2000,
   },
   {
     id: 'palette_neon',
     category: 'palette',
-    title: 'Неон',
-    description: 'Розово-циановые яркие тона',
+    titleKey: 'cosmetic.palette_neon.title',
+    descKey: 'cosmetic.palette_neon.desc',
     price: 4000,
   },
 ];
@@ -68,29 +68,29 @@ export const PARTICLE_SETS: readonly CosmeticItem[] = [
   {
     id: 'particles_default',
     category: 'particles',
-    title: 'Импульсы',
-    description: 'Стандартные частицы',
+    titleKey: 'cosmetic.particles_default.title',
+    descKey: 'cosmetic.particles_default.desc',
     price: 0,
   },
   {
     id: 'particles_spark',
     category: 'particles',
-    title: 'Искры',
-    description: 'Яркие искры при попадании',
+    titleKey: 'cosmetic.particles_spark.title',
+    descKey: 'cosmetic.particles_spark.desc',
     price: 3000,
   },
   {
     id: 'particles_rings',
     category: 'particles',
-    title: 'Кольца',
-    description: 'Расходящиеся кольца при PERFECT',
+    titleKey: 'cosmetic.particles_rings.title',
+    descKey: 'cosmetic.particles_rings.desc',
     price: 4500,
   },
   {
     id: 'particles_void',
     category: 'particles',
-    title: 'Пустота',
-    description: 'Тёмные частицы с фиолетовым свечением',
+    titleKey: 'cosmetic.particles_void.title',
+    descKey: 'cosmetic.particles_void.desc',
     price: 6000,
   },
 ];
@@ -100,22 +100,22 @@ export const SOUND_SETS: readonly CosmeticItem[] = [
   {
     id: 'sound_default',
     category: 'sound',
-    title: 'Щелчки',
-    description: 'Стандартные синтезированные щелчки',
+    titleKey: 'cosmetic.sound_default.title',
+    descKey: 'cosmetic.sound_default.desc',
     price: 0,
   },
   {
     id: 'sound_chime',
     category: 'sound',
-    title: 'Колокольчики',
-    description: 'Мелодичные перезвоны',
+    titleKey: 'cosmetic.sound_chime.title',
+    descKey: 'cosmetic.sound_chime.desc',
     price: 4000,
   },
   {
     id: 'sound_techno',
     category: 'sound',
-    title: 'Техно',
-    description: 'Электронные ритмичные щелчки',
+    titleKey: 'cosmetic.sound_techno.title',
+    descKey: 'cosmetic.sound_techno.desc',
     price: 8000,
   },
 ];

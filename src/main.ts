@@ -1,7 +1,12 @@
 import './ui/style.css';
+import './i18n/ru';
+import './i18n/en';
 import { GameShell } from './app/GameShell';
 import { GAMEPUSH_CONFIG } from './config/gamepush';
 import { createGamePlatform } from './platform/gamepush/createGamePlatform';
+import { setLang, detectLang, t } from './i18n/locale';
+
+setLang(detectLang());
 
 function fail(message: string): void {
   const overlay = document.getElementById('overlay');
@@ -9,8 +14,8 @@ function fail(message: string): void {
   overlay.hidden = false;
   overlay.innerHTML = `
     <header>
-      <div class="panel__eyebrow">ошибка запуска</div>
-      <h1 class="panel__title">Нужен WebGL2</h1>
+      <div class="panel__eyebrow">${t('sys.error.startup')}</div>
+      <h1 class="panel__title">${t('sys.error.webgl')}</h1>
       <p class="panel__note">${message}</p>
     </header>`;
 }
@@ -22,7 +27,7 @@ async function bootstrap(): Promise<void> {
   const debug = document.getElementById('debug');
 
   if (!(canvas instanceof HTMLCanvasElement) || !hud || !overlay || !debug) {
-    throw new Error('Разметка страницы повреждена');
+    throw new Error(t('sys.error.markup'));
   }
 
   const platform = await createGamePlatform(GAMEPUSH_CONFIG);

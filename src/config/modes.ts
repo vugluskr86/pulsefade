@@ -4,7 +4,7 @@ export type ModeId = 'adaptive' | 'chaos' | 'marathon' | 'zen' | 'duel' | 'daily
 export interface ModeDefinition {
   readonly id: ModeId;
   readonly title: string;
-  readonly subtitle: string;
+  readonly subtitleKey: string;
   /** null — раунд без таймера. */
   readonly durationMs: number | null;
   readonly baseIntervalMs: number;
@@ -35,7 +35,7 @@ export const MODES: Record<ModeId, ModeDefinition> = {
   adaptive: {
     id: 'adaptive',
     title: 'Adaptive',
-    subtitle: 'Стандартный меняющийся темп',
+    subtitleKey: 'mode.adaptive.desc',
     durationMs: 30_000,
     baseIntervalMs: 620,
     minIntervalMs: 420,
@@ -51,7 +51,7 @@ export const MODES: Record<ModeId, ModeDefinition> = {
   chaos: {
     id: 'chaos',
     title: 'Chaos',
-    subtitle: 'Резкие, но телеграфированные смены',
+    subtitleKey: 'mode.chaos.desc',
     durationMs: 30_000,
     baseIntervalMs: 600,
     minIntervalMs: 380,
@@ -74,7 +74,7 @@ export const MODES: Record<ModeId, ModeDefinition> = {
   marathon: {
     id: 'marathon',
     title: 'Marathon',
-    subtitle: 'Постоянное ускорение, три промаха — конец',
+    subtitleKey: 'mode.marathon.desc',
     durationMs: null,
     baseIntervalMs: 700,
     minIntervalMs: 230,
@@ -90,7 +90,7 @@ export const MODES: Record<ModeId, ModeDefinition> = {
   zen: {
     id: 'zen',
     title: 'Zen',
-    subtitle: 'Без поражения, только точность',
+    subtitleKey: 'mode.zen.desc',
     durationMs: null,
     baseIntervalMs: 720,
     minIntervalMs: 520,
@@ -106,7 +106,7 @@ export const MODES: Record<ModeId, ModeDefinition> = {
   duel: {
     id: 'duel',
     title: 'Duel',
-    subtitle: 'Одинаковая последовательность паттернов у двух игроков',
+    subtitleKey: 'mode.duel.desc',
     durationMs: 30_000,
     baseIntervalMs: 620,
     minIntervalMs: 420,
@@ -122,7 +122,7 @@ export const MODES: Record<ModeId, ModeDefinition> = {
   daily: {
     id: 'daily',
     title: 'Daily',
-    subtitle: 'Ежедневная одинаковая последовательность для всех',
+    subtitleKey: 'mode.daily.desc',
     durationMs: 35_000,
     baseIntervalMs: 620,
     minIntervalMs: 420,

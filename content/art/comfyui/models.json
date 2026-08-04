@@ -1,0 +1,60 @@
+{
+  "primary": {
+    "name": "FLUX.1-schnell (full)",
+    "reason": "Primary production model for release art: strong prompt following and Apache-2.0 commercial-friendly license.",
+    "files": [
+      {
+        "file": "flux1-schnell.safetensors",
+        "folder": "ComfyUI/models/diffusion_models/",
+        "source": "black-forest-labs/FLUX.1-schnell",
+        "license": "Apache-2.0"
+      },
+      {
+        "file": "t5xxl_fp8_e4m3fn.safetensors",
+        "folder": "ComfyUI/models/text_encoders/",
+        "source": "comfyanonymous/flux_text_encoders",
+        "license": "Check repository/model card before redistribution; used as FLUX text encoder"
+      },
+      {
+        "file": "clip_l.safetensors",
+        "folder": "ComfyUI/models/text_encoders/",
+        "source": "comfyanonymous/flux_text_encoders",
+        "license": "Check repository/model card before redistribution; used as FLUX text encoder"
+      },
+      {
+        "file": "ae.safetensors",
+        "folder": "ComfyUI/models/vae/",
+        "source": "black-forest-labs/FLUX.1-schnell",
+        "license": "Apache-2.0 repository"
+      }
+    ]
+  },
+  "lowVramAlternative": {
+    "name": "FLUX.1-schnell FP8 checkpoint",
+    "files": [
+      {
+        "file": "flux1-schnell-fp8.safetensors",
+        "folder": "ComfyUI/models/checkpoints/",
+        "source": "Comfy-Org/flux1-schnell",
+        "license": "Derived from FLUX.1-schnell; verify current model card before use"
+      }
+    ],
+    "note": "The supplied blueprints target the full FLUX workflow. Use ComfyUI's built-in FLUX Schnell FP8 template if the full model is too heavy."
+  },
+  "upscaler": {
+    "name": "Real-ESRGAN x4plus",
+    "files": [
+      {
+        "file": "RealESRGAN_x4plus.pth",
+        "folder": "ComfyUI/models/upscale_models/",
+        "source": "xinntao/Real-ESRGAN releases",
+        "license": "BSD-3-Clause (project code; keep source/license record with production assets)"
+      }
+    ]
+  },
+  "doNotUseForCommercialReleaseByDefault": [
+    "FLUX.1-dev unless you have independently verified that your intended use is allowed by the exact license attached to the weights you downloaded",
+    "random CivitAI checkpoints or LoRAs without saving a copy of their license/model card",
+    "models whose license only says non-commercial/research"
+  ]
+}

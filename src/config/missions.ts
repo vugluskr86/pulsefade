@@ -4,8 +4,8 @@ export type MissionId = string;
 
 export interface MissionDefinition {
   readonly id: MissionId;
-  readonly title: string;
-  readonly description: string;
+  readonly titleKey: string;
+  readonly descKey: string;
   readonly target: number;
   readonly reward: number;
   /** Тип счётчика для отслеживания прогресса. */
@@ -33,56 +33,56 @@ export interface MissionsState {
 export const WEEKLY_MISSIONS: readonly MissionDefinition[] = [
   {
     id: 'perfect_25',
-    title: 'Меткий стрелок',
-    description: 'Сделать 25 PERFECT',
+    titleKey: 'missions.perfect_25.title',
+    descKey: 'missions.perfect_25.desc',
     target: 25,
     reward: 50,
     tracker: 'perfects',
   },
   {
     id: 'combo_20',
-    title: 'На волне',
-    description: 'Удержать серию 20',
+    titleKey: 'missions.combo_20.title',
+    descKey: 'missions.combo_20.desc',
     target: 20,
     reward: 100,
     tracker: 'bestCombo',
   },
   {
     id: 'flawless',
-    title: 'Безупречно',
-    description: 'Пройти раунд без MISS',
+    titleKey: 'missions.flawless.title',
+    descKey: 'missions.flawless.desc',
     target: 1,
     reward: 150,
     tracker: 'perfectRound',
   },
   {
     id: 'modes_3',
-    title: 'Разнообразие',
-    description: 'Сыграть 3 разных режима',
+    titleKey: 'missions.modes_3.title',
+    descKey: 'missions.modes_3.desc',
     target: 3,
     reward: 75,
     tracker: 'modesPlayed',
   },
   {
     id: 'beat_record',
-    title: 'Превзойти себя',
-    description: 'Улучшить личный рекорд',
+    titleKey: 'missions.beat_record.title',
+    descKey: 'missions.beat_record.desc',
     target: 1,
     reward: 100,
     tracker: 'beatRecord',
   },
   {
     id: 'replay_watch',
-    title: 'Киноман',
-    description: 'Посмотреть повтор лучшей серии',
+    titleKey: 'missions.replay_watch.title',
+    descKey: 'missions.replay_watch.desc',
     target: 1,
     reward: 50,
     tracker: 'replayWatch',
   },
   {
     id: 'rounds_5',
-    title: 'Марафонец',
-    description: 'Завершить 5 раундов',
+    titleKey: 'missions.rounds_5.title',
+    descKey: 'missions.rounds_5.desc',
     target: 5,
     reward: 75,
     tracker: 'roundsPlayed',
