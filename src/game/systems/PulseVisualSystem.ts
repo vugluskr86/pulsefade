@@ -2,6 +2,7 @@ import type { ISystem } from '../../core/ecs/System';
 import { clamp, lerp } from '../../core/math/util';
 import { SHAPE_ARC, SHAPE_RING } from '../../render/IRenderer';
 import { Pulse, Sprite, Transform } from '../components';
+import { visualTheme } from '../../config/visualThemes';
 import { copyColorFrom, gradeColor, telegraphColor } from '../colors';
 import { LAYOUT } from '../layout';
 import type { GameContext } from '../GameContext';
@@ -20,6 +21,7 @@ export class PulseVisualSystem implements ISystem {
     const unit = ctx.view.unit;
     const targetRadius = LAYOUT.targetRadius * unit;
     const spawnRadius = LAYOUT.spawnRadius * unit;
+    const bloom = visualTheme(ctx.visualTheme).bloom;
 
     for (const [entity, pulse] of ctx.world.view(Pulse)) {
       const sprite = ctx.world.require(entity, Sprite);
@@ -42,6 +44,7 @@ export class PulseVisualSystem implements ISystem {
         sprite.radius = lerp(targetRadius, targetRadius * (pulse.grade === 'miss' ? 0.6 : 1.35), t);
         sprite.shape = SHAPE_RING;
         sprite.arc = undefined;
+        sprite.glow = (pulse.grade === 'miss' ? 0.8 : 2.4) * (1 - t) * bloom;
         continue;
       }
 
@@ -67,6 +70,8 @@ export class PulseVisualSystem implements ISystem {
         sprite.arc = undefined;
       }
       sprite.thickness = LAYOUT.ringThickness * unit * (beat.kind === 'hold' ? 1.8 : 1);
+      // Кольцо разгорается по мере подлёта — попадание читается как вспышка света.
+      sprite.glow = (0.7 + progress * 1.6) * bloom;
       sprite.color[0] = color[0];
       sprite.color[1] = color[1];
       sprite.color[2] = color[2];
@@ -104,6 +109,7 @@ export class PulseVisualSystem implements ISystem {
         softness: 2,
         color: copyColorFrom(telegraphColor('faster'), 0.8),
         layer: 18,
+        glow: 1.8,
       });
       pulse.aux = aux;
     }

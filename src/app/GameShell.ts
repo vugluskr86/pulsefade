@@ -147,6 +147,7 @@ export class GameShell {
     this.journey = loadJourneyState();
     this.missions = loadMissionsState();
     this.cosmetics = loadCosmeticState();
+    this.audio.setStyle(this.cosmetics.selected.sound);
     this.sessionCount = this.loadSessionCount() + 1;
     this.saveSessionCount();
 
@@ -268,6 +269,7 @@ export class GameShell {
         visualTheme: this.cosmetics.selected.palette,
         visualBackground: this.cosmetics.selected.background,
         visualTarget: this.cosmetics.selected.target,
+        visualParticles: this.cosmetics.selected.particles,
       }),
     );
     this.platform.gameplayStart();
@@ -298,6 +300,7 @@ export class GameShell {
         visualTheme: this.cosmetics.selected.palette,
         visualBackground: this.cosmetics.selected.background,
         visualTarget: this.cosmetics.selected.target,
+        visualParticles: this.cosmetics.selected.particles,
       }),
     );
     this.platform.goal('REPLAY_START', this.mode);
@@ -592,6 +595,7 @@ export class GameShell {
         visualTheme: this.cosmetics.selected.palette,
         visualBackground: this.cosmetics.selected.background,
         visualTarget: this.cosmetics.selected.target,
+        visualParticles: this.cosmetics.selected.particles,
       }),
     );
     this.platform.gameplayStart();
@@ -955,6 +959,8 @@ export class GameShell {
     if (category === 'palette') this.runner?.setVisualTheme(this.cosmetics.selected.palette);
     if (category === 'background') this.runner?.setVisualBackground(this.cosmetics.selected.background);
     if (category === 'target') this.runner?.setVisualTarget(this.cosmetics.selected.target);
+    if (category === 'particles') this.runner?.setVisualParticles(this.cosmetics.selected.particles);
+    if (category === 'sound') this.audio.setStyle(this.cosmetics.selected.sound);
   }
 
   private showStats(): void {

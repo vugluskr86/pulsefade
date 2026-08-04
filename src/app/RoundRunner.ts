@@ -30,6 +30,7 @@ import { HudSystem } from '../game/systems/HudSystem';
 import { RoundSystem } from '../game/systems/RoundSystem';
 import { RunRecorder } from './RunRecorder';
 import type { BackgroundId, TargetId, VisualThemeId } from '../config/visualThemes';
+import type { ParticleSetId } from '../config/particleSets';
 
 export interface RunnerDeps {
   readonly renderer: IRenderer;
@@ -50,6 +51,7 @@ export interface RoundOptions {
   readonly visualTheme?: string;
   readonly visualBackground?: string;
   readonly visualTarget?: string;
+  readonly visualParticles?: string;
 }
 
 export interface RoundSummary {
@@ -114,6 +116,7 @@ export class RoundRunner {
       visualTheme: (options.visualTheme ?? 'palette_default') as VisualThemeId,
       visualBackground: (options.visualBackground ?? 'background_reactor') as BackgroundId,
       visualTarget: (options.visualTarget ?? 'target_crosshair') as TargetId,
+      visualParticles: (options.visualParticles ?? 'particles_default') as ParticleSetId,
     };
 
     this.syncView();
@@ -165,6 +168,10 @@ export class RoundRunner {
 
   setVisualTarget(target: string): void {
     this.ctx.visualTarget = target as TargetId;
+  }
+
+  setVisualParticles(particles: string): void {
+    this.ctx.visualParticles = particles as ParticleSetId;
   }
 
   summary(): RoundSummary {

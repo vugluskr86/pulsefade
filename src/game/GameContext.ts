@@ -10,6 +10,7 @@ import type { ScoreState } from '../domain/Scoring';
 import type { InputEvent } from '../input/InputEvent';
 import type { Entity } from '../core/ecs/World';
 import type { BackgroundId, TargetId, VisualThemeId } from '../config/visualThemes';
+import type { ParticleSetId } from '../config/particleSets';
 
 export interface Viewport {
   width: number;
@@ -67,4 +68,5 @@ export interface GameContext {
   visualTheme: VisualThemeId;
   visualBackground: BackgroundId;
   visualTarget: TargetId;
+  visualParticles: ParticleSetId;
 }

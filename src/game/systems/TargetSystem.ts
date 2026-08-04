@@ -1,7 +1,8 @@
 import type { ISystem } from '../../core/ecs/System';
 import { damp } from '../../core/math/util';
-import { SHAPE_ARC, SHAPE_BAR, SHAPE_DISC, SHAPE_GLOW, SHAPE_RING } from '../../render/IRenderer';
-import { targetPreset, visualTheme, type TargetPreset } from '../../config/visualThemes';
+import { SHAPE_ARC, SHAPE_RING } from '../../render/IRenderer';
+import { toneColor, visualTheme, type VisualTheme } from '../../config/visualThemes';
+import { targetStyle, type TargetDeco, type TargetStyle } from '../../config/targetStyles';
 import { Pulse, Sprite, Target, Transform, type MutableColor, type PulseData } from '../components';
 import { copyColorFrom, telegraphColor } from '../colors';
 import { LAYOUT } from '../layout';
@@ -9,22 +10,32 @@ import type { GameContext } from '../GameContext';
 
 type TargetRole = 'center' | 'left' | 'right';
 
-/** A deterministic procedural target: rings, rotating sectors, ticks and a drifting core. */
+/**
+ * Мишень собирается из стиля (config/targetStyles): каждая покупка меняет
+ * саму конструкцию прибора, а не только видимость трёх готовых слоёв.
+ * Само кольцо мишени остаётся геймплейным якорем и не зависит от косметики.
+ */
 export class TargetSystem implements ISystem {
   readonly name = 'Target';
+  private activeStyle = '';
+  private flatCache: { deco: TargetDeco; index: number }[] = [];
+  private flatCacheKey = '';
 
   constructor(ctx: GameContext) {
+    this.activeStyle = ctx.visualTarget;
     this.spawn(ctx, 'center', 0, 1);
     this.spawn(ctx, 'left', -LAYOUT.choiceOffset, 0);
     this.spawn(ctx, 'right', LAYOUT.choiceOffset, 0);
   }
 
   update(dt: number, ctx: GameContext): void {
+    if (this.activeStyle !== ctx.visualTarget) this.rebuild(ctx);
+
     const unit = ctx.view.unit;
     const choiceSide = this.pendingChoiceSide(ctx);
     const time = ctx.clock.now / 1000;
     const theme = visualTheme(ctx.visualTheme);
-    const targetStyle = targetPreset(ctx.visualTarget);
+    const style = targetStyle(ctx.visualTarget);
     const sectorPulse = this.activeSector(ctx);
 
     for (const [entity, target] of ctx.world.view(Target)) {
@@ -33,13 +44,19 @@ export class TargetSystem implements ISystem {
       const offset = target.role === 'left' ? -LAYOUT.choiceOffset : target.role === 'right' ? LAYOUT.choiceOffset : 0;
       transform.x = ctx.view.cx + offset * unit;
       transform.y = ctx.view.cy;
-      const wanted = target.role === 'center' ? (choiceSide === null ? 1 : 0.18) : choiceSide === null ? 0 : (target.role === 'left' ? -1 : 1) === choiceSide ? 1 : 0.3;
+
+      const wanted = target.role === 'center'
+        ? (choiceSide === null ? 1 : 0.18)
+        : choiceSide === null ? 0 : (target.role === 'left' ? -1 : 1) === choiceSide ? 1 : 0.3;
       target.visibility = damp(target.visibility, wanted, 14, dt);
       target.kick = damp(target.kick, 0, 9, dt);
-      target.sectorAngle += dt / 1000 * (target.variant % 2 === 0 ? 0.48 : -0.7) * (1 + ctx.fx.tier * 0.13);
+      target.sectorAngle += (dt / 1000) * (target.variant % 2 === 0 ? 0.48 : -0.7) * (1 + ctx.fx.tier * 0.13);
 
-      sprite.radius = LAYOUT.targetRadius * unit * (1 + target.kick * 0.09);
-      sprite.thickness = LAYOUT.targetThickness * unit * (1 + target.kick * 1.6);
+      const base = LAYOUT.targetRadius * unit;
+      sprite.radius = base * (1 + target.kick * 0.09);
+      sprite.thickness = LAYOUT.targetThickness * unit * style.ringThickness * (1 + target.kick * 1.6);
+      sprite.glow = style.ringGlow * theme.bloom;
+
       const isSyncedSector = target.role === 'center' && sectorPulse !== null;
       sprite.shape = isSyncedSector ? SHAPE_ARC : SHAPE_RING;
       sprite.arc = isSyncedSector ? sectorPulse.sectorArc : undefined;
@@ -47,74 +64,84 @@ export class TargetSystem implements ISystem {
       if (isSyncedSector) {
         sprite.radius *= 0.72;
         sprite.thickness *= 1.8;
-        this.color(sprite.color, telegraphColor(sectorPulse.beat.telegraph), target.visibility * (0.8 + target.kick * 0.2));
+        this.color(sprite.color, telegraphColor(sectorPulse.beat.telegraph), target.visibility * (0.85 + target.kick * 0.2));
       } else {
-        this.color(sprite.color, theme.primary, target.visibility * (0.42 + target.kick * 0.58));
+        this.color(sprite.color, theme.primary, target.visibility * (style.ringAlpha * 0.62 + target.kick * 0.5));
       }
-      this.updateDecorations(ctx, target, transform.x, transform.y, time, targetStyle, theme.primary, theme.secondary, theme.accent, theme.sector);
+
+      this.updateDecorations(ctx, target, transform.x, transform.y, time, style, theme);
     }
   }
 
   private updateDecorations(
-    ctx: GameContext, target: { visibility: number; kick: number; variant: number; sectorAngle: number; decorations: number[] }, x: number, y: number, time: number, style: TargetPreset,
-    primary: readonly [number, number, number, number], secondary: readonly [number, number, number, number], accent: readonly [number, number, number, number], sector: readonly [number, number, number, number],
+    ctx: GameContext,
+    target: { visibility: number; kick: number; variant: number; decorations: number[] },
+    x: number, y: number, time: number, style: TargetStyle, theme: VisualTheme,
   ): void {
     const unit = ctx.view.unit;
-    const visible = target.visibility;
     const base = LAYOUT.targetRadius * unit;
-    for (let i = 0; i < target.decorations.length; i += 1) {
+    const visible = target.visibility;
+    const kick = target.kick;
+
+    // Общий дрейф ядра: элементы с follow едут вместе с ним.
+    const phase = time * (0.9 + target.variant * 0.13) + target.variant * 1.9;
+    const drift = style.wander * base * (1 + ctx.fx.tier * 0.22);
+    const driftX = Math.cos(phase) * drift;
+    const driftY = Math.sin(phase * 1.61) * drift * 0.72;
+
+    const decos = this.flatten(style, ctx.visualTarget);
+    for (let i = 0; i < target.decorations.length && i < decos.length; i += 1) {
       const entity = target.decorations[i];
       const transform = ctx.world.get(entity, Transform);
       const sprite = ctx.world.get(entity, Sprite);
       if (!transform || !sprite) continue;
+      const { deco, index } = decos[i];
+
       transform.x = x;
       transform.y = y;
-      if (i === 0) { // soft pulse behind the target
-        sprite.radius = base * (1.7 + Math.sin(time * 2.2) * 0.09 + target.kick * 0.75);
-        this.color(sprite.color, secondary, visible * (0.055 + target.kick * 0.15));
-      } else if (i === 1) { // outer instrumentation ring
-        sprite.radius = base * (1.72 + target.kick * 0.12);
-        this.color(sprite.color, secondary, visible * 0.23);
-      } else if (i < 5) { // three wide scanning sectors
-        sprite.radius = base * (1.38 + (i % 2) * 0.12);
-        sprite.rotation = target.sectorAngle + (i - 2) * 2.094;
-        sprite.arc = 0.34 + target.variant * 0.06;
-        this.color(sprite.color, i === 2 ? accent : sector, style.sectors ? visible * (0.35 + target.kick * 0.55) : 0);
-      } else if (i < 13) { // rotating ticks / line decoration
-        sprite.radius = base * (1.08 + (i % 2) * 0.23);
-        sprite.rotation = target.sectorAngle * -0.55 + (i - 5) * (Math.PI * 2 / 8);
-        this.color(sprite.color, primary, visible * (0.24 + (i % 3 === 0 ? 0.16 : 0)));
-      } else if (i < 17) { // independently rotating crosshair arms
-        const arm = i - 13;
-        const angle = time * (1.05 + target.variant * 0.18) + arm * Math.PI * 0.5;
-        const distance = base * 0.67;
-        transform.x += Math.cos(angle) * distance;
-        transform.y += Math.sin(angle) * distance;
-        sprite.radius = base * 0.17;
-        sprite.thickness = unit * 0.012;
-        sprite.rotation = angle;
-        this.color(sprite.color, arm % 2 === 0 ? primary : sector, style.crosshair ? visible * (0.4 + target.kick * 0.35) : 0);
-      } else { // a real wandering centre, separate from the stable outer target
-        const corePhase = time * (0.9 + target.variant * 0.13) + target.variant * 1.9;
-        const drift = style.wander ? base * (0.16 + ctx.fx.tier * 0.045) : 0;
-        const coreX = Math.cos(corePhase) * drift;
-        const coreY = Math.sin(corePhase * 1.61) * drift * 0.72;
-        transform.x += coreX;
-        transform.y += coreY;
-        const corePart = i - 17;
-        if (corePart === 0) {
-          sprite.radius = base * (0.35 + target.kick * 0.35);
-          this.color(sprite.color, accent, style.wander ? visible * (0.14 + target.kick * 0.2) : 0);
-        } else if (corePart === 1) {
-          sprite.radius = base * (0.2 + target.kick * 0.08);
-          sprite.thickness = unit * 0.012;
-          this.color(sprite.color, style.wander ? accent : primary, visible * (0.65 + target.kick * 0.2));
-        } else {
-          sprite.radius = base * (0.075 + target.kick * 0.025);
-          this.color(sprite.color, primary, visible * (0.78 + 0.22 * Math.sin(time * 5.2)));
-        }
+      if (deco.follow) {
+        transform.x += driftX;
+        transform.y += driftY;
       }
+
+      const orbitPhase = (deco.rot ?? 0) + (deco.dphase ?? 0) * index + time * (deco.orbitSpeed ?? 0);
+      if (deco.orbit) {
+        transform.x += Math.cos(orbitPhase) * deco.orbit * base;
+        transform.y += Math.sin(orbitPhase) * deco.orbit * base;
+      }
+
+      let radius = deco.r;
+      if (deco.breathe) radius += Math.sin(time * (deco.bspeed ?? 2)) * deco.breathe;
+      radius += kick * (deco.kick ?? 0);
+      sprite.radius = radius * base;
+
+      let alpha = deco.alpha * visible;
+      alpha *= 1 + kick * (deco.kickAlpha ?? 0);
+      if (deco.pulse) {
+        const w = Math.sin(time * (deco.pspeed ?? 4));
+        alpha *= 1 - deco.pulse + deco.pulse * w * w;
+      }
+
+      sprite.rotation = deco.align
+        ? orbitPhase
+        : (deco.rot ?? 0) + (deco.drot ?? 0) * index + time * (deco.spin ?? 0);
+      sprite.glow = (deco.glow ?? 0) * theme.bloom;
+
+      this.color(sprite.color, toneColor(theme, deco.tone), alpha);
     }
+  }
+
+  /** Раскрытие repeat кэшируется: список перестраивается только при смене стиля. */
+  private flatten(style: TargetStyle, key: string): { deco: TargetDeco; index: number }[] {
+    if (this.flatCacheKey === key && this.flatCache.length > 0) return this.flatCache;
+    const list: { deco: TargetDeco; index: number }[] = [];
+    for (const deco of style.decorations) {
+      const repeat = deco.repeat ?? 1;
+      for (let i = 0; i < repeat; i += 1) list.push({ deco, index: i });
+    }
+    this.flatCache = list;
+    this.flatCacheKey = key;
+    return list;
   }
 
   private pendingChoiceSide(ctx: GameContext): -1 | 1 | null {
@@ -131,35 +158,56 @@ export class TargetSystem implements ISystem {
     return null;
   }
 
+  private rebuild(ctx: GameContext): void {
+    this.activeStyle = ctx.visualTarget;
+    for (const [, target] of ctx.world.view(Target)) {
+      for (const entity of target.decorations) ctx.world.destroyEntity(entity);
+      target.decorations = this.createDecorations(ctx);
+    }
+  }
+
   private spawn(ctx: GameContext, role: TargetRole, offset: number, visibility: number): void {
     const world = ctx.world;
     const unit = ctx.view.unit;
     const theme = visualTheme(ctx.visualTheme);
     const entity = world.createEntity();
-    const decorations = this.createDecorations(ctx, theme.primary, theme.secondary, theme.accent);
+    const decorations = this.createDecorations(ctx);
     world.add(entity, Transform, { x: ctx.view.cx + offset * unit, y: ctx.view.cy });
-    world.add(entity, Sprite, { shape: SHAPE_RING, radius: LAYOUT.targetRadius * unit, thickness: LAYOUT.targetThickness * unit, softness: 1.4, color: copyColorFrom(theme.primary, visibility * 0.42), layer: 10 });
-    // Visual variation must not consume the gameplay RNG: replays and beat patterns stay identical.
+    world.add(entity, Sprite, {
+      shape: SHAPE_RING,
+      radius: LAYOUT.targetRadius * unit,
+      thickness: LAYOUT.targetThickness * unit,
+      softness: 1.4,
+      color: copyColorFrom(theme.primary, visibility * 0.42),
+      layer: 10,
+      glow: 2,
+    });
+    // Визуальная вариация не тратит игровой RNG: реплеи и паттерны остаются идентичными.
     const variant = role === 'center' ? 1 : role === 'left' ? 0 : 2;
     world.add(entity, Target, { role, kick: 0, visibility, variant, sectorAngle: variant * 2.094, decorations });
   }
 
-  private createDecorations(ctx: GameContext, primary: readonly [number, number, number, number], secondary: readonly [number, number, number, number], accent: readonly [number, number, number, number]): number[] {
+  private createDecorations(ctx: GameContext): number[] {
+    const style = targetStyle(ctx.visualTarget);
+    const theme = visualTheme(ctx.visualTheme);
     const entities: number[] = [];
-    const add = (shape: typeof SHAPE_RING | typeof SHAPE_DISC | typeof SHAPE_GLOW | typeof SHAPE_ARC | typeof SHAPE_BAR, radius: number, thickness: number, color: readonly [number, number, number, number], layer: number, arc?: number): void => {
+    for (const { deco } of this.flatten(style, ctx.visualTarget)) {
       const entity = ctx.world.createEntity();
       ctx.world.add(entity, Transform, { x: ctx.view.cx, y: ctx.view.cy });
-      ctx.world.add(entity, Sprite, { shape, radius, thickness, softness: 1.4, color: copyColorFrom(color, 0), layer, arc });
+      ctx.world.add(entity, Sprite, {
+        shape: deco.shape,
+        radius: 1,
+        thickness: (deco.t ?? 0.04) * LAYOUT.targetRadius * ctx.view.unit,
+        softness: 1.4,
+        color: copyColorFrom(toneColor(theme, deco.tone), 0),
+        layer: deco.layer,
+        arc: deco.arc,
+        count: deco.count,
+        param: deco.p1,
+        glow: 0,
+      });
       entities.push(entity);
-    };
-    add(SHAPE_GLOW, 1, 0, secondary, 2);
-    add(SHAPE_RING, 1, 1, secondary, 4);
-    for (let i = 0; i < 3; i += 1) add(SHAPE_ARC, 1, 1, accent, 6, 0.4);
-    for (let i = 0; i < 8; i += 1) add(SHAPE_ARC, 1, 1, primary, 7, 0.06);
-    for (let i = 0; i < 4; i += 1) add(SHAPE_BAR, 1, 1, primary, 8);
-    add(SHAPE_GLOW, 1, 0, accent, 9);
-    add(SHAPE_RING, 1, 1, accent, 11);
-    add(SHAPE_DISC, 1, 0, primary, 12);
+    }
     return entities;
   }
 

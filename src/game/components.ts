@@ -19,6 +19,14 @@ export interface SpriteData {
   layer: number;
   rotation?: number;
   arc?: number;
+  /** Сила неонового ореола: 0 — плоско, 1..2.5 — свечение как в референсах. */
+  glow?: number;
+  /** TICKS/DASH: количество штрихов. */
+  count?: number;
+  /** TICKS: ширина штриха, DASH: скважность, WAVE: частота, GLOW: спад. */
+  param?: number;
+  /** WEDGE: мягкость краёв, WAVE: фаза. */
+  param2?: number;
 }
 
 export interface PulseData {
@@ -45,6 +53,10 @@ export interface ParticleData {
   vx: number;
   vy: number;
   drag: number;
+  /** Ускорение обратно к точке рождения (набор «Пустота»). */
+  pull: number;
+  originX: number;
+  originY: number;
 }
 
 export interface LifetimeData {

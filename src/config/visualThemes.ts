@@ -9,27 +9,19 @@ export type BackgroundId =
 
 export type TargetId = 'target_crosshair' | 'target_sectors' | 'target_wander';
 
-export type GradientMotion = 'pulse' | 'breathe' | 'flow' | 'drift' | 'rush' | 'scan' | 'flicker' | 'eclipse' | 'counter' | 'twinkle';
-
-export interface BackgroundPreset {
-  readonly scene: number;
-  readonly motion: GradientMotion;
-  readonly speed: number;
-}
-
-export interface TargetPreset {
-  readonly crosshair: boolean;
-  readonly sectors: boolean;
-  readonly wander: boolean;
-}
-
 export interface VisualTheme {
+  /** Цвет заливки кадра — почти чёрный, объём даёт дымка. */
   readonly ink: Rgba;
-  readonly background: readonly [Rgba, Rgba, Rgba];
+  /** Три тона объёмной дымки: дальний, средний, ближний. */
+  readonly haze: readonly [Rgba, Rgba, Rgba];
   readonly primary: Rgba;
   readonly secondary: Rgba;
   readonly accent: Rgba;
   readonly sector: Rgba;
+  /** Горячий (почти белый) тон для ядра ярких колец. */
+  readonly hot: Rgba;
+  /** Общий множитель силы неонового ореола палитры. */
+  readonly bloom: number;
 }
 
 const hex = (value: string, alpha = 1): Rgba => {
@@ -37,28 +29,55 @@ const hex = (value: string, alpha = 1): Rgba => {
   return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255, alpha];
 };
 
-/** IDs correspond to the palette cosmetics, so a purchased palette changes the playfield. */
+/**
+ * Палитры собраны по референс-артам: почти чёрная база, крупная цветная дымка
+ * и три-четыре чистых неоновых тона, которые не смешиваются в грязь при аддитивном блендинге.
+ */
 export const VISUAL_THEMES: Record<VisualThemeId, VisualTheme> = {
-  palette_default: { ink: hex('#07070f'), background: [hex('#1b1246'), hex('#053a58'), hex('#3a123b')], primary: hex('#6ee7ff'), secondary: hex('#9d7bff'), accent: hex('#ffb454'), sector: hex('#e8e6f0') },
-  palette_fire: { ink: hex('#170509'), background: [hex('#5d100b'), hex('#3d0717'), hex('#7a3008')], primary: hex('#ff6b45'), secondary: hex('#ff285d'), accent: hex('#ffd166'), sector: hex('#ff9f43') },
-  palette_ice: { ink: hex('#04111d'), background: [hex('#07395b'), hex('#12355b'), hex('#134c55')], primary: hex('#5be7ff'), secondary: hex('#9bc8ff'), accent: hex('#effcff'), sector: hex('#79f7df') },
-  palette_toxic: { ink: hex('#07130c'), background: [hex('#1c4b1b'), hex('#173d2d'), hex('#3d4c0b')], primary: hex('#94ff4b'), secondary: hex('#35f5b8'), accent: hex('#f1ff4b'), sector: hex('#d1ff78') },
-  palette_night: { ink: hex('#050817'), background: [hex('#101b50'), hex('#192a66'), hex('#25124f')], primary: hex('#778cff'), secondary: hex('#a878ff'), accent: hex('#70d6ff'), sector: hex('#c6cbff') },
-  palette_neon: { ink: hex('#160515'), background: [hex('#590a51'), hex('#083f5c'), hex('#691135')], primary: hex('#21e6ff'), secondary: hex('#ff31cf'), accent: hex('#ffdc3d'), sector: hex('#ff85dd') },
+  palette_default: {
+    ink: hex('#080410'),
+    haze: [hex('#2b0f4e'), hex('#0a2d5c'), hex('#4a0f3c')],
+    primary: hex('#4fd8ff'), secondary: hex('#a86bff'), accent: hex('#ffc24a'), sector: hex('#e6e2ff'),
+    hot: hex('#f4fbff'), bloom: 1,
+  },
+  palette_fire: {
+    ink: hex('#110207'),
+    haze: [hex('#5e0d10'), hex('#7d2a04'), hex('#3d0416')],
+    primary: hex('#ff7a3c'), secondary: hex('#ff2d55'), accent: hex('#ffd166'), sector: hex('#ffb37a'),
+    hot: hex('#fff2e0'), bloom: 1.2,
+  },
+  palette_ice: {
+    ink: hex('#020a16'),
+    haze: [hex('#07294c'), hex('#0b3c54'), hex('#101f4e')],
+    primary: hex('#57e8ff'), secondary: hex('#9dc6ff'), accent: hex('#eafcff'), sector: hex('#7cf5dd'),
+    hot: hex('#ffffff'), bloom: 1.05,
+  },
+  palette_toxic: {
+    ink: hex('#030d08'),
+    haze: [hex('#0f3d1c'), hex('#16402e'), hex('#3d4a06')],
+    primary: hex('#9dff4a'), secondary: hex('#2ff5b6'), accent: hex('#f2ff4a'), sector: hex('#d6ff85'),
+    hot: hex('#f4ffe6'), bloom: 1.1,
+  },
+  palette_night: {
+    ink: hex('#02040d'),
+    haze: [hex('#0d1442'), hex('#131f5c'), hex('#23104e')],
+    primary: hex('#6f86ff'), secondary: hex('#a86bff'), accent: hex('#6fd6ff'), sector: hex('#c4c9ff'),
+    hot: hex('#eef1ff'), bloom: 0.85,
+  },
+  /** Ближе всего к референсам: бордовая дымка, циан, маджента и жёлтый. */
+  palette_neon: {
+    ink: hex('#100208'),
+    haze: [hex('#5a0a28'), hex('#07304f'), hex('#3f0736')],
+    primary: hex('#21e6ff'), secondary: hex('#ff2d9b'), accent: hex('#ffd400'), sector: hex('#ff7ad2'),
+    hot: hex('#ffffff'), bloom: 1.35,
+  },
 };
 
-export const BACKGROUND_PRESETS: Record<BackgroundId, BackgroundPreset> = {
-  background_reactor: { scene: 0, motion: 'pulse', speed: 1 },
-  background_portal: { scene: 1, motion: 'breathe', speed: 0.56 },
-  background_horizon: { scene: 2, motion: 'flow', speed: 0.75 },
-  background_orbit: { scene: 3, motion: 'drift', speed: 0.48 },
-  background_tunnel: { scene: 4, motion: 'rush', speed: 1.25 },
-  background_scanner: { scene: 5, motion: 'scan', speed: 1.4 },
-  background_frame: { scene: 6, motion: 'flicker', speed: 0.9 },
-  background_eclipse: { scene: 7, motion: 'eclipse', speed: 0.34 },
-  background_gates: { scene: 8, motion: 'counter', speed: 0.65 },
-  background_constellation: { scene: 9, motion: 'twinkle', speed: 0.8 },
-};
+export interface TargetPreset {
+  readonly crosshair: boolean;
+  readonly sectors: boolean;
+  readonly wander: boolean;
+}
 
 export const TARGET_PRESETS: Record<TargetId, TargetPreset> = {
   target_crosshair: { crosshair: true, sectors: false, wander: false },
@@ -70,10 +89,21 @@ export function visualTheme(id: string | undefined): VisualTheme {
   return VISUAL_THEMES[id as VisualThemeId] ?? VISUAL_THEMES.palette_default;
 }
 
-export function backgroundPreset(id: string | undefined): BackgroundPreset {
-  return BACKGROUND_PRESETS[id as BackgroundId] ?? BACKGROUND_PRESETS.background_reactor;
-}
-
 export function targetPreset(id: string | undefined): TargetPreset {
   return TARGET_PRESETS[id as TargetId] ?? TARGET_PRESETS.target_crosshair;
+}
+
+export type ToneId = 'far' | 'mid' | 'near' | 'primary' | 'secondary' | 'accent' | 'sector' | 'hot';
+
+export function toneColor(theme: VisualTheme, tone: ToneId): Rgba {
+  switch (tone) {
+    case 'far': return theme.haze[0];
+    case 'mid': return theme.haze[1];
+    case 'near': return theme.haze[2];
+    case 'secondary': return theme.secondary;
+    case 'accent': return theme.accent;
+    case 'sector': return theme.sector;
+    case 'hot': return theme.hot;
+    default: return theme.primary;
+  }
 }

@@ -35,6 +35,10 @@ export class RenderSystem implements ISystem {
         color: sprite.color,
         rotation: sprite.rotation,
         arc: sprite.arc,
+        glow: sprite.glow,
+        count: sprite.count,
+        param: sprite.param,
+        param2: sprite.param2,
       });
     }
 
@@ -42,9 +46,16 @@ export class RenderSystem implements ISystem {
   }
 
   private clearColor(ctx: GameContext): Rgba {
-    const ink = visualTheme(ctx.visualTheme).ink;
-    const glow = ctx.fx.background * 0.05 + ctx.fx.flash * 0.035;
-    const damage = ctx.fx.damage * 0.09;
-    return [ink[0] + glow * 0.5 + damage, ink[1] + glow * 0.3, ink[2] + glow * 0.9, 1];
+    const theme = visualTheme(ctx.visualTheme);
+    const ink = theme.ink;
+    // Заливка остаётся почти чёрной: объём даёт дымка фона, а не осветление clear-цвета.
+    const lift = ctx.fx.background * 0.028 + ctx.fx.flash * 0.02;
+    const damage = ctx.fx.damage * 0.07;
+    return [
+      ink[0] + lift * theme.primary[0] + damage,
+      ink[1] + lift * theme.primary[1],
+      ink[2] + lift * theme.primary[2],
+      1,
+    ];
   }
 }
