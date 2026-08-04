@@ -54,7 +54,7 @@ export class NullGamePlatform implements IGamePlatform {
   chooseResultMonetization(): ResultMonetization {
     return 'none';
   }
-  async grantReward(): Promise<void> {}
+  async grantReward(_amount: number): Promise<void> {}
   async showFullscreen(): Promise<boolean> {
     return false;
   }
@@ -71,5 +71,37 @@ export class NullGamePlatform implements IGamePlatform {
   }
   onSoundChange(): () => void {
     return () => {};
+  }
+}
+
+/** Local wallet for the GitHub Pages build, so cosmetics can be exercised before GamePush is connected. */
+export class DemoGamePlatform extends NullGamePlatform {
+  private static readonly balanceKey = 'pulsefade:demo-pulses';
+  private balance = this.loadBalance();
+
+  override getCurrencyBalance(): number {
+    return this.balance;
+  }
+
+  override async grantReward(amount: number): Promise<void> {
+    this.balance = Math.max(0, this.balance + amount);
+    try {
+      localStorage.setItem(DemoGamePlatform.balanceKey, String(this.balance));
+    } catch {
+      // The demo remains usable when storage is blocked.
+    }
+  }
+
+  private loadBalance(): number {
+    try {
+      const raw = localStorage.getItem(DemoGamePlatform.balanceKey);
+      if (raw !== null) {
+        const saved = Number(raw);
+        if (Number.isFinite(saved) && saved >= 0) return Math.max(50_000, saved);
+      }
+    } catch {
+      // Fall through to the test allocation.
+    }
+    return 50_000;
   }
 }

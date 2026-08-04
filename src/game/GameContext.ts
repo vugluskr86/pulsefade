@@ -9,6 +9,7 @@ import type { JudgementEvent } from '../domain/Judgement';
 import type { ScoreState } from '../domain/Scoring';
 import type { InputEvent } from '../input/InputEvent';
 import type { Entity } from '../core/ecs/World';
+import type { BackgroundId, TargetId, VisualThemeId } from '../config/visualThemes';
 
 export interface Viewport {
   width: number;
@@ -63,4 +64,7 @@ export interface GameContext {
   readonly inputs: InputEvent[];
   /** В реплее ввод скриптован, а часть эффектов приглушена. */
   readonly replay: boolean;
+  visualTheme: VisualThemeId;
+  visualBackground: BackgroundId;
+  visualTarget: TargetId;
 }

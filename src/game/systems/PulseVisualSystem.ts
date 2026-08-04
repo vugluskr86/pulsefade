@@ -1,6 +1,6 @@
 import type { ISystem } from '../../core/ecs/System';
 import { clamp, lerp } from '../../core/math/util';
-import { SHAPE_RING } from '../../render/IRenderer';
+import { SHAPE_ARC, SHAPE_RING } from '../../render/IRenderer';
 import { Pulse, Sprite, Transform } from '../components';
 import { copyColorFrom, gradeColor, telegraphColor } from '../colors';
 import { LAYOUT } from '../layout';
@@ -40,6 +40,8 @@ export class PulseVisualSystem implements ISystem {
         sprite.color[2] = color[2];
         sprite.color[3] = (1 - t) * 0.8;
         sprite.radius = lerp(targetRadius, targetRadius * (pulse.grade === 'miss' ? 0.6 : 1.35), t);
+        sprite.shape = SHAPE_RING;
+        sprite.arc = undefined;
         continue;
       }
 
@@ -56,6 +58,14 @@ export class PulseVisualSystem implements ISystem {
 
       const color = telegraphColor(beat.telegraph);
       sprite.radius = radius;
+      sprite.shape = pulse.sector ? SHAPE_ARC : SHAPE_RING;
+      if (pulse.sector) {
+        pulse.sectorAngle = now / 1000 * (0.95 + (pulse.beat.index % 3) * 0.16) + pulse.beat.index * 1.73;
+        sprite.rotation = pulse.sectorAngle;
+        sprite.arc = pulse.sectorArc;
+      } else {
+        sprite.arc = undefined;
+      }
       sprite.thickness = LAYOUT.ringThickness * unit * (beat.kind === 'hold' ? 1.8 : 1);
       sprite.color[0] = color[0];
       sprite.color[1] = color[1];

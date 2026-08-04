@@ -1,7 +1,7 @@
 import type { ISystem } from '../../core/ecs/System';
 import type { Beat, IBeatSource } from '../../domain/Beat';
 import { PALETTE, copyColorFrom } from '../colors';
-import { SHAPE_RING } from '../../render/IRenderer';
+import { SHAPE_ARC, SHAPE_RING } from '../../render/IRenderer';
 import { LAYOUT } from '../layout';
 import { Pulse, Sprite, Transform } from '../components';
 import type { GameContext } from '../GameContext';
@@ -46,18 +46,25 @@ export class BeatSpawnSystem implements ISystem {
     const world = ctx.world;
     const entity = world.createEntity();
     const anchorX = beat.kind === 'choice' ? beat.side * LAYOUT.choiceOffset : 0;
+    // Every fourth eligible beat is a sector. This is derived from the beat itself,
+    // so visual variety never changes the gameplay RNG or replay data.
+    const sector = beat.kind !== 'choice' && beat.kind !== 'hold' && beat.index % 4 === 1;
+    const sectorArc = 0.62 + (beat.index % 3) * 0.14;
+    const sectorAngle = beat.index * 1.73;
 
     world.add(entity, Transform, {
       x: ctx.view.cx + anchorX * ctx.view.unit,
       y: ctx.view.cy,
     });
     world.add(entity, Sprite, {
-      shape: SHAPE_RING,
+      shape: sector ? SHAPE_ARC : SHAPE_RING,
       radius: LAYOUT.spawnRadius * ctx.view.unit,
       thickness: LAYOUT.ringThickness * ctx.view.unit,
       softness: 1.6,
       color: copyColorFrom(PALETTE.pulse, 0),
       layer: 20,
+      rotation: sectorAngle,
+      arc: sectorArc,
     });
     world.add(entity, Pulse, {
       beat,
@@ -71,6 +78,9 @@ export class BeatSpawnSystem implements ISystem {
       holdStartedAt: null,
       aux: null,
       anchorX,
+      sector,
+      sectorAngle,
+      sectorArc,
     });
 
     ctx.bus.emit('beatSpawned', { entity, beat });

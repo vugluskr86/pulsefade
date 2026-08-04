@@ -331,6 +331,14 @@ export class Overlay {
         items: ALL_COSMETICS.filter((c) => c.category === 'palette'),
       },
       {
+        title: t('shop.category.backgrounds'),
+        items: ALL_COSMETICS.filter((c) => c.category === 'background'),
+      },
+      {
+        title: t('shop.category.targets'),
+        items: ALL_COSMETICS.filter((c) => c.category === 'target'),
+      },
+      {
         title: t('shop.category.particles'),
         items: ALL_COSMETICS.filter((c) => c.category === 'particles'),
       },

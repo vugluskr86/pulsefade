@@ -29,6 +29,7 @@ import { RenderSystem } from '../game/systems/RenderSystem';
 import { HudSystem } from '../game/systems/HudSystem';
 import { RoundSystem } from '../game/systems/RoundSystem';
 import { RunRecorder } from './RunRecorder';
+import type { BackgroundId, TargetId, VisualThemeId } from '../config/visualThemes';
 
 export interface RunnerDeps {
   readonly renderer: IRenderer;
@@ -46,6 +47,9 @@ export interface RoundOptions {
   readonly beatSource?: IBeatSource;
   readonly replay?: boolean;
   readonly durationMs?: number | null;
+  readonly visualTheme?: string;
+  readonly visualBackground?: string;
+  readonly visualTarget?: string;
 }
 
 export interface RoundSummary {
@@ -107,6 +111,9 @@ export class RoundRunner {
       fx: { background: 0, flash: 0, damage: 0, tier: 0 },
       inputs: [],
       replay,
+      visualTheme: (options.visualTheme ?? 'palette_default') as VisualThemeId,
+      visualBackground: (options.visualBackground ?? 'background_reactor') as BackgroundId,
+      visualTarget: (options.visualTarget ?? 'target_crosshair') as TargetId,
     };
 
     this.syncView();
@@ -127,7 +134,7 @@ export class RoundRunner {
       new ParticleSystem(),
       new TweenSystem(),
       new LifetimeSystem(),
-      new BackgroundSystem(this.ctx),
+      new BackgroundSystem(options.seed, this.ctx),
       new RenderSystem(deps.renderer),
       new RoundSystem(),
     );
@@ -146,6 +153,18 @@ export class RoundRunner {
 
   get finished(): boolean {
     return this.ctx.round.ended;
+  }
+
+  setVisualTheme(theme: string): void {
+    this.ctx.visualTheme = theme as VisualThemeId;
+  }
+
+  setVisualBackground(background: string): void {
+    this.ctx.visualBackground = background as BackgroundId;
+  }
+
+  setVisualTarget(target: string): void {
+    this.ctx.visualTarget = target as TargetId;
   }
 
   summary(): RoundSummary {

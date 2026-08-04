@@ -2,7 +2,7 @@ import type { Rgba } from '../../config/palette';
 import type { DrawCommand, IRenderer } from '../IRenderer';
 import { FRAGMENT_SHADER, VERTEX_SHADER } from './shaders';
 
-const FLOATS_PER_INSTANCE = 10; // x,y, radius,thickness,softness,shape, r,g,b,a
+const FLOATS_PER_INSTANCE = 12; // x,y, radius,thickness,softness,shape, r,g,b,a, rotation,arc
 const BYTES_PER_INSTANCE = FLOATS_PER_INSTANCE * 4;
 const MAX_PIXEL_RATIO = 2;
 
@@ -65,6 +65,7 @@ export class GLRenderer implements IRenderer {
     this.setupInstanceAttribute(1, 2, 0);
     this.setupInstanceAttribute(2, 4, 8);
     this.setupInstanceAttribute(3, 4, 24);
+    this.setupInstanceAttribute(4, 2, 40);
 
     gl.bindVertexArray(null);
 
@@ -116,6 +117,8 @@ export class GLRenderer implements IRenderer {
     data[offset + 7] = command.color[1];
     data[offset + 8] = command.color[2];
     data[offset + 9] = command.color[3];
+    data[offset + 10] = command.rotation ?? 0;
+    data[offset + 11] = command.arc ?? Math.PI * 2;
     this.count += 1;
   }
 

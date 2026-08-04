@@ -265,6 +265,9 @@ export class GameShell {
         seed,
         tuning: this.tuning,
         inputProvider: this.input,
+        visualTheme: this.cosmetics.selected.palette,
+        visualBackground: this.cosmetics.selected.background,
+        visualTarget: this.cosmetics.selected.target,
       }),
     );
     this.platform.gameplayStart();
@@ -292,6 +295,9 @@ export class GameShell {
         replay: true,
         beatSource: new RecordedBeatSource(plan.beats),
         inputProvider: new ScriptedInputProvider(plan.script),
+        visualTheme: this.cosmetics.selected.palette,
+        visualBackground: this.cosmetics.selected.background,
+        visualTarget: this.cosmetics.selected.target,
       }),
     );
     this.platform.goal('REPLAY_START', this.mode);
@@ -523,12 +529,17 @@ export class GameShell {
         total: JOURNEY_TRIALS.length,
       }),
     };
+    const shopAction: ActionItem = {
+      id: 'shop',
+      label: t('menu.shop'),
+      hint: t('stats.hint'),
+    };
     const statsAction: ActionItem = {
       id: 'stats',
       label: t('stats.title'),
       hint: t('stats.hint'),
     };
-    this.overlay.showModes(this.mode, [journeyAction, statsAction, ...this.leaderboardActions()]);
+    this.overlay.showModes(this.mode, [journeyAction, shopAction, statsAction, ...this.leaderboardActions()]);
     this.primaryAction = 'close';
   }
 
@@ -578,6 +589,9 @@ export class GameShell {
         seed: trial.seed,
         tuning: this.tuning,
         inputProvider: this.input,
+        visualTheme: this.cosmetics.selected.palette,
+        visualBackground: this.cosmetics.selected.background,
+        visualTarget: this.cosmetics.selected.target,
       }),
     );
     this.platform.gameplayStart();
@@ -919,13 +933,28 @@ export class GameShell {
 
   private handleShopBuy(itemId: string): void {
     const item = ALL_COSMETICS.find((c) => c.id === itemId);
-    if (!item || !canBuy(item, this.cosmetics, this.platform.getCurrencyBalance())) return;
+    if (!item) return;
+    if (this.cosmetics.owned.includes(item.id)) {
+      this.cosmetics = selectCosmetic(this.cosmetics, item.category, item.id);
+      saveCosmeticState(this.cosmetics);
+      this.applyCosmeticNow(item.category);
+      this.showShop();
+      return;
+    }
+    if (!canBuy(item, this.cosmetics, this.platform.getCurrencyBalance())) return;
     this.cosmetics = buyCosmetic(item, this.cosmetics);
     this.cosmetics = selectCosmetic(this.cosmetics, item.category, item.id);
     saveCosmeticState(this.cosmetics);
+    this.applyCosmeticNow(item.category);
     this.platform.grantReward(-item.price);
     this.platform.goal('COSMETIC_BUY', item.id);
     this.showShop();
+  }
+
+  private applyCosmeticNow(category: CosmeticCategory): void {
+    if (category === 'palette') this.runner?.setVisualTheme(this.cosmetics.selected.palette);
+    if (category === 'background') this.runner?.setVisualBackground(this.cosmetics.selected.background);
+    if (category === 'target') this.runner?.setVisualTarget(this.cosmetics.selected.target);
   }
 
   private showStats(): void {

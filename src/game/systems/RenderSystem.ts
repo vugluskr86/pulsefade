@@ -1,7 +1,7 @@
 import type { ISystem } from '../../core/ecs/System';
 import type { IRenderer } from '../../render/IRenderer';
 import type { Rgba } from '../../config/palette';
-import { PALETTE } from '../colors';
+import { visualTheme } from '../../config/visualThemes';
 import { Sprite, Transform } from '../components';
 import type { GameContext } from '../GameContext';
 
@@ -33,6 +33,8 @@ export class RenderSystem implements ISystem {
         softness: sprite.softness,
         shape: sprite.shape,
         color: sprite.color,
+        rotation: sprite.rotation,
+        arc: sprite.arc,
       });
     }
 
@@ -40,7 +42,7 @@ export class RenderSystem implements ISystem {
   }
 
   private clearColor(ctx: GameContext): Rgba {
-    const ink = PALETTE.ink;
+    const ink = visualTheme(ctx.visualTheme).ink;
     const glow = ctx.fx.background * 0.05 + ctx.fx.flash * 0.035;
     const damage = ctx.fx.damage * 0.09;
     return [ink[0] + glow * 0.5 + damage, ink[1] + glow * 0.3, ink[2] + glow * 0.9, 1];

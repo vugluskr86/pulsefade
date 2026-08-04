@@ -1,4 +1,4 @@
-export type CosmeticCategory = 'palette' | 'particles' | 'sound';
+export type CosmeticCategory = 'palette' | 'background' | 'target' | 'particles' | 'sound';
 
 export interface CosmeticItem {
   readonly id: string;
@@ -12,6 +12,8 @@ export interface CosmeticState {
   readonly owned: readonly string[];
   readonly selected: {
     palette: string;
+    background: string;
+    target: string;
     particles: string;
     sound: string;
   };
@@ -61,6 +63,27 @@ export const PALETTES: readonly CosmeticItem[] = [
     descKey: 'cosmetic.palette_neon.desc',
     price: 4000,
   },
+];
+
+/** Ten animated playfield scenes, derived from the neon target references. */
+export const BACKGROUND_SETS: readonly CosmeticItem[] = [
+  { id: 'background_reactor', category: 'background', titleKey: 'cosmetic.background_reactor.title', descKey: 'cosmetic.background_reactor.desc', price: 0 },
+  { id: 'background_portal', category: 'background', titleKey: 'cosmetic.background_portal.title', descKey: 'cosmetic.background_portal.desc', price: 600 },
+  { id: 'background_horizon', category: 'background', titleKey: 'cosmetic.background_horizon.title', descKey: 'cosmetic.background_horizon.desc', price: 900 },
+  { id: 'background_orbit', category: 'background', titleKey: 'cosmetic.background_orbit.title', descKey: 'cosmetic.background_orbit.desc', price: 1200 },
+  { id: 'background_tunnel', category: 'background', titleKey: 'cosmetic.background_tunnel.title', descKey: 'cosmetic.background_tunnel.desc', price: 1600 },
+  { id: 'background_scanner', category: 'background', titleKey: 'cosmetic.background_scanner.title', descKey: 'cosmetic.background_scanner.desc', price: 2000 },
+  { id: 'background_frame', category: 'background', titleKey: 'cosmetic.background_frame.title', descKey: 'cosmetic.background_frame.desc', price: 2400 },
+  { id: 'background_eclipse', category: 'background', titleKey: 'cosmetic.background_eclipse.title', descKey: 'cosmetic.background_eclipse.desc', price: 2800 },
+  { id: 'background_gates', category: 'background', titleKey: 'cosmetic.background_gates.title', descKey: 'cosmetic.background_gates.desc', price: 3200 },
+  { id: 'background_constellation', category: 'background', titleKey: 'cosmetic.background_constellation.title', descKey: 'cosmetic.background_constellation.desc', price: 3600 },
+];
+
+/** Three target animation styles. */
+export const TARGET_SETS: readonly CosmeticItem[] = [
+  { id: 'target_crosshair', category: 'target', titleKey: 'cosmetic.target_crosshair.title', descKey: 'cosmetic.target_crosshair.desc', price: 0 },
+  { id: 'target_sectors', category: 'target', titleKey: 'cosmetic.target_sectors.title', descKey: 'cosmetic.target_sectors.desc', price: 1200 },
+  { id: 'target_wander', category: 'target', titleKey: 'cosmetic.target_wander.title', descKey: 'cosmetic.target_wander.desc', price: 1800 },
 ];
 
 /** 4 набора частиц. */
@@ -122,6 +145,8 @@ export const SOUND_SETS: readonly CosmeticItem[] = [
 
 export const ALL_COSMETICS: readonly CosmeticItem[] = [
   ...PALETTES,
+  ...BACKGROUND_SETS,
+  ...TARGET_SETS,
   ...PARTICLE_SETS,
   ...SOUND_SETS,
 ];
@@ -134,9 +159,11 @@ export function getCosmetic(id: string): CosmeticItem | undefined {
 
 export function createInitialCosmeticState(): CosmeticState {
   return {
-    owned: ['palette_default', 'particles_default', 'sound_default'],
+    owned: ['palette_default', 'background_reactor', 'target_crosshair', 'particles_default', 'sound_default'],
     selected: {
       palette: 'palette_default',
+      background: 'background_reactor',
+      target: 'target_crosshair',
       particles: 'particles_default',
       sound: 'sound_default',
     },
@@ -148,7 +175,18 @@ export function loadCosmeticState(): CosmeticState {
     const raw = localStorage.getItem('pulsefade:cosmetics');
     if (raw) {
       const parsed = JSON.parse(raw) as CosmeticState;
-      if (parsed && parsed.owned && parsed.selected) return parsed;
+      if (parsed && parsed.owned && parsed.selected) {
+        return {
+          owned: [...new Set([...parsed.owned, 'background_reactor', 'target_crosshair'])],
+          selected: {
+            palette: parsed.selected.palette ?? 'palette_default',
+            background: parsed.selected.background ?? 'background_reactor',
+            target: parsed.selected.target ?? 'target_crosshair',
+            particles: parsed.selected.particles ?? 'particles_default',
+            sound: parsed.selected.sound ?? 'sound_default',
+          },
+        };
+      }
     }
   } catch {
     /* игнорируем */

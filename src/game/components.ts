@@ -17,6 +17,8 @@ export interface SpriteData {
   softness: number;
   color: MutableColor;
   layer: number;
+  rotation?: number;
+  arc?: number;
 }
 
 export interface PulseData {
@@ -33,6 +35,10 @@ export interface PulseData {
   /** Вспомогательный спрайт: шкала удержания. */
   aux: Entity | null;
   anchorX: number;
+  /** A subset of beats travel as an arc and align with the sector in the target. */
+  sector: boolean;
+  sectorAngle: number;
+  sectorArc: number;
 }
 
 export interface ParticleData {
@@ -64,6 +70,9 @@ export interface TargetData {
   /** Текущая «отдача» от попадания 0..1. */
   kick: number;
   visibility: number;
+  variant: number;
+  sectorAngle: number;
+  decorations: Entity[];
 }
 
 export const Transform = defineComponent<TransformData>('Transform');

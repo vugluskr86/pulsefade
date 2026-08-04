@@ -1,10 +1,11 @@
 import type { GamePushConfig } from '../../config/gamepush';
-import { NullGamePlatform, type IGamePlatform } from '../IGamePlatform';
+import { DemoGamePlatform, NullGamePlatform, type IGamePlatform } from '../IGamePlatform';
 import { loadGamePushSdk } from './GamePushLoader';
 import { GamePushPlatform } from './GamePushPlatform';
 
 /** Локальная разработка и сбой CDN не должны блокировать запуск самой игры. */
 export async function createGamePlatform(config: GamePushConfig): Promise<IGamePlatform> {
+  if (!config.enabled) return new DemoGamePlatform();
   try {
     const sdk = await loadGamePushSdk(config);
     return sdk ? new GamePushPlatform(sdk, config) : new NullGamePlatform();
