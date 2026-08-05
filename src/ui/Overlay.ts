@@ -1,7 +1,7 @@
 import { MODES, MODE_ORDER, type ModeId } from '../config/modes';
 import { JOURNEY_TRIALS, type Medal, type JourneyState } from '../config/journey';
 import { WEEKLY_MISSIONS, type MissionsState } from '../config/missions';
-import { ALL_COSMETICS, type CosmeticState, type CosmeticItem } from '../config/cosmetics';
+import { ALL_COSMETICS, RANDOM_SELECTION, type CosmeticCategory, type CosmeticState, type CosmeticItem } from '../config/cosmetics';
 import { t, fmt } from '../i18n/locale';
 
 export interface StatItem {
@@ -325,24 +325,29 @@ export class Overlay {
   }
 
   showCosmetics(state: CosmeticState, balance: number): void {
-    const categories: { title: string; items: readonly CosmeticItem[] }[] = [
+    const categories: { category: CosmeticCategory; title: string; items: readonly CosmeticItem[] }[] = [
       {
+        category: 'palette',
         title: t('shop.category.palettes'),
         items: ALL_COSMETICS.filter((c) => c.category === 'palette'),
       },
       {
+        category: 'background',
         title: t('shop.category.backgrounds'),
         items: ALL_COSMETICS.filter((c) => c.category === 'background'),
       },
       {
+        category: 'target',
         title: t('shop.category.targets'),
         items: ALL_COSMETICS.filter((c) => c.category === 'target'),
       },
       {
+        category: 'particles',
         title: t('shop.category.particles'),
         items: ALL_COSMETICS.filter((c) => c.category === 'particles'),
       },
       {
+        category: 'sound',
         title: t('shop.category.sound'),
         items: ALL_COSMETICS.filter((c) => c.category === 'sound'),
       },
@@ -367,6 +372,30 @@ export class Overlay {
         'font-family:var(--mono); font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:var(--muted); margin-bottom:6px;';
       sub.textContent = cat.title;
       section.append(sub);
+
+      const randomSelected = state.selected[cat.category] === RANDOM_SELECTION;
+      const randomRow = document.createElement('div');
+      randomRow.style.cssText =
+        'display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px solid var(--hair);';
+      const randomInfo = document.createElement('div');
+      randomInfo.style.flex = '1';
+      const randomName = document.createElement('div');
+      randomName.style.cssText =
+        'font-family:var(--mono); font-size:10px; letter-spacing:0.1em; color:var(--chalk);';
+      randomName.textContent = t('shop.random') + (randomSelected ? ' ·' : '');
+      const randomDesc = document.createElement('div');
+      randomDesc.style.cssText = 'font-size:9px; color:var(--muted);';
+      randomDesc.textContent = t('shop.randomHint');
+      randomInfo.append(randomName, randomDesc);
+      const randomAction = document.createElement('button');
+      randomAction.type = 'button';
+      randomAction.className = 'btn';
+      randomAction.style.cssText = 'padding:6px 12px; font-size:10px; min-width:70px; text-align:center;';
+      randomAction.textContent = randomSelected ? t('shop.selected') : t('shop.use');
+      if (randomSelected) randomAction.disabled = true;
+      else randomAction.dataset.action = `cosmetic:random:${cat.category}`;
+      randomRow.append(randomInfo, randomAction);
+      section.append(randomRow);
 
       for (const item of cat.items) {
         const owned = state.owned.includes(item.id);

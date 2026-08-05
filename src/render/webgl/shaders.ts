@@ -56,8 +56,13 @@ void main() {
   float dist = length(vLocal);
   float radius = vGeom.x;
   float thickness = vGeom.y;
-  float softness = max(vGeom.z, 0.75);
   float shape = vGeom.w;
+  // Geometric elements use a narrow, derivative-based AA edge. Large GLOW sprites
+  // deliberately keep their broad falloff, but rings/lines stay crisp on any DPI.
+  float requestedSoftness = max(vGeom.z, 0.001);
+  float softness = shape >= 1.5 && shape < 2.5
+    ? requestedSoftness
+    : max(requestedSoftness * 0.42, fwidth(dist) * 1.15);
 
   float rotation = vArc.x;
   float arc = vArc.y;
@@ -67,7 +72,7 @@ void main() {
   float p1 = vExtra.z;
   float p2 = vExtra.w;
 
-  float haloWidth = max(thickness * 1.6 + softness * 1.5, 2.5);
+  float haloWidth = max(thickness * 1.1 + softness * 0.85, 1.35);
   float core = 0.0;
   float halo = 0.0;
 
@@ -158,6 +163,8 @@ void main() {
     halo = exp(-max(abs(p.y) - h, 0.0) / haloWidth) * env;
   }
 
+  // Tighten the light core without making the sub-pixel anti-aliasing jagged.
+  if (!(shape >= 1.5 && shape < 2.5)) core = smoothstep(0.10, 0.82, core);
   float alpha = clamp(core + halo * glow, 0.0, 1.0) * vColor.a;
   if (alpha <= 0.002) discard;
 

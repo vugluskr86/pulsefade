@@ -115,6 +115,8 @@ registerLocale('en', {
   'shop.category.particles': 'Particles',
   'shop.category.sound': 'Sound',
   'shop.selected': 'selected',
+  'shop.random': 'Random',
+  'shop.randomHint': 'A new variant each round, including unowned previews',
   'shop.use': 'use',
   'shop.bought': 'owned',
 

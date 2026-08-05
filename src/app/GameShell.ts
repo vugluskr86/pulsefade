@@ -36,6 +36,8 @@ import {
   saveCosmeticState,
   canBuy,
   buyCosmetic,
+  RANDOM_SELECTION,
+  resolveCosmeticSelection,
   selectCosmetic,
   type CosmeticState,
   type CosmeticItem,
@@ -147,7 +149,7 @@ export class GameShell {
     this.journey = loadJourneyState();
     this.missions = loadMissionsState();
     this.cosmetics = loadCosmeticState();
-    this.audio.setStyle(this.cosmetics.selected.sound);
+    this.audio.setStyle(this.sceneCosmetics(randomSeed()).sound);
     this.sessionCount = this.loadSessionCount() + 1;
     this.saveSessionCount();
 
@@ -260,16 +262,18 @@ export class GameShell {
     this.hud.resetTape();
     this.wantsLiveInput = true;
     this.syncInputState();
+    const visuals = this.sceneCosmetics(seed);
+    this.audio.setStyle(visuals.sound);
     this.swapRunner(
       new RoundRunner(this.deps(), {
         mode: MODES[mode],
         seed,
         tuning: this.tuning,
         inputProvider: this.input,
-        visualTheme: this.cosmetics.selected.palette,
-        visualBackground: this.cosmetics.selected.background,
-        visualTarget: this.cosmetics.selected.target,
-        visualParticles: this.cosmetics.selected.particles,
+        visualTheme: visuals.palette,
+        visualBackground: visuals.background,
+        visualTarget: visuals.target,
+        visualParticles: visuals.particles,
       }),
     );
     this.platform.gameplayStart();
@@ -289,6 +293,8 @@ export class GameShell {
     this.hud.resetTape();
     this.wantsLiveInput = false;
     this.syncInputState();
+    const visuals = this.sceneCosmetics(1);
+    this.audio.setStyle(visuals.sound);
     this.swapRunner(
       new RoundRunner(this.deps(), {
         mode: MODES[this.mode],
@@ -297,10 +303,10 @@ export class GameShell {
         replay: true,
         beatSource: new RecordedBeatSource(plan.beats),
         inputProvider: new ScriptedInputProvider(plan.script),
-        visualTheme: this.cosmetics.selected.palette,
-        visualBackground: this.cosmetics.selected.background,
-        visualTarget: this.cosmetics.selected.target,
-        visualParticles: this.cosmetics.selected.particles,
+        visualTheme: visuals.palette,
+        visualBackground: visuals.background,
+        visualTarget: visuals.target,
+        visualParticles: visuals.particles,
       }),
     );
     this.platform.goal('REPLAY_START', this.mode);
@@ -586,16 +592,19 @@ export class GameShell {
       eventsFromBeat: trial.eventsFromBeat,
     };
 
+    const visuals = this.sceneCosmetics(trial.seed);
+    this.audio.setStyle(visuals.sound);
+
     this.swapRunner(
       new RoundRunner(this.deps(), {
         mode: journeyMode,
         seed: trial.seed,
         tuning: this.tuning,
         inputProvider: this.input,
-        visualTheme: this.cosmetics.selected.palette,
-        visualBackground: this.cosmetics.selected.background,
-        visualTarget: this.cosmetics.selected.target,
-        visualParticles: this.cosmetics.selected.particles,
+        visualTheme: visuals.palette,
+        visualBackground: visuals.background,
+        visualTarget: visuals.target,
+        visualParticles: visuals.particles,
       }),
     );
     this.platform.gameplayStart();
@@ -936,6 +945,15 @@ export class GameShell {
   }
 
   private handleShopBuy(itemId: string): void {
+    if (itemId.startsWith(`${RANDOM_SELECTION}:`)) {
+      const category = itemId.slice(RANDOM_SELECTION.length + 1) as CosmeticCategory;
+      if (!['palette', 'background', 'target', 'particles', 'sound'].includes(category)) return;
+      this.cosmetics = selectCosmetic(this.cosmetics, category, RANDOM_SELECTION);
+      saveCosmeticState(this.cosmetics);
+      this.applyCosmeticNow(category);
+      this.showShop();
+      return;
+    }
     const item = ALL_COSMETICS.find((c) => c.id === itemId);
     if (!item) return;
     if (this.cosmetics.owned.includes(item.id)) {
@@ -956,11 +974,22 @@ export class GameShell {
   }
 
   private applyCosmeticNow(category: CosmeticCategory): void {
-    if (category === 'palette') this.runner?.setVisualTheme(this.cosmetics.selected.palette);
-    if (category === 'background') this.runner?.setVisualBackground(this.cosmetics.selected.background);
-    if (category === 'target') this.runner?.setVisualTarget(this.cosmetics.selected.target);
-    if (category === 'particles') this.runner?.setVisualParticles(this.cosmetics.selected.particles);
-    if (category === 'sound') this.audio.setStyle(this.cosmetics.selected.sound);
+    const visuals = this.sceneCosmetics(randomSeed());
+    if (category === 'palette') this.runner?.setVisualTheme(visuals.palette);
+    if (category === 'background') this.runner?.setVisualBackground(visuals.background);
+    if (category === 'target') this.runner?.setVisualTarget(visuals.target);
+    if (category === 'particles') this.runner?.setVisualParticles(visuals.particles);
+    if (category === 'sound') this.audio.setStyle(visuals.sound);
+  }
+
+  private sceneCosmetics(seed: number): Record<CosmeticCategory, string> {
+    return {
+      palette: resolveCosmeticSelection(this.cosmetics, 'palette', seed),
+      background: resolveCosmeticSelection(this.cosmetics, 'background', seed),
+      target: resolveCosmeticSelection(this.cosmetics, 'target', seed),
+      particles: resolveCosmeticSelection(this.cosmetics, 'particles', seed),
+      sound: resolveCosmeticSelection(this.cosmetics, 'sound', seed),
+    };
   }
 
   private showStats(): void {

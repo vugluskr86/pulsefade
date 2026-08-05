@@ -115,6 +115,8 @@ registerLocale('ru', {
   'shop.category.particles': 'Частицы',
   'shop.category.sound': 'Звук',
   'shop.selected': 'выбрано',
+  'shop.random': 'Случайно',
+  'shop.randomHint': 'Новый вариант каждый раунд, включая превью некупленных',
   'shop.use': 'исп.',
   'shop.bought': 'куплено',
 

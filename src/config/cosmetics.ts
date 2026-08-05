@@ -1,4 +1,5 @@
 export type CosmeticCategory = 'palette' | 'background' | 'target' | 'particles' | 'sound';
+export const RANDOM_SELECTION = 'random';
 
 export interface CosmeticItem {
   readonly id: string;
@@ -9,6 +10,7 @@ export interface CosmeticItem {
 }
 
 export interface CosmeticState {
+  readonly version: 2;
   readonly owned: readonly string[];
   readonly selected: {
     palette: string;
@@ -159,13 +161,14 @@ export function getCosmetic(id: string): CosmeticItem | undefined {
 
 export function createInitialCosmeticState(): CosmeticState {
   return {
+    version: 2,
     owned: ['palette_default', 'background_reactor', 'target_crosshair', 'particles_default', 'sound_default'],
     selected: {
-      palette: 'palette_default',
-      background: 'background_reactor',
-      target: 'target_crosshair',
-      particles: 'particles_default',
-      sound: 'sound_default',
+      palette: RANDOM_SELECTION,
+      background: RANDOM_SELECTION,
+      target: RANDOM_SELECTION,
+      particles: RANDOM_SELECTION,
+      sound: RANDOM_SELECTION,
     },
   };
 }
@@ -174,16 +177,23 @@ export function loadCosmeticState(): CosmeticState {
   try {
     const raw = localStorage.getItem('pulsefade:cosmetics');
     if (raw) {
-      const parsed = JSON.parse(raw) as CosmeticState;
+      const parsed = JSON.parse(raw) as Partial<CosmeticState>;
       if (parsed && parsed.owned && parsed.selected) {
+        const legacy = parsed.version !== 2;
+        const selected = parsed.selected;
+        const migrate = (category: CosmeticCategory, fallback: string): string => {
+          const value = selected[category];
+          return legacy && (!value || value === fallback) ? RANDOM_SELECTION : value ?? RANDOM_SELECTION;
+        };
         return {
+          version: 2,
           owned: [...new Set([...parsed.owned, 'background_reactor', 'target_crosshair'])],
           selected: {
-            palette: parsed.selected.palette ?? 'palette_default',
-            background: parsed.selected.background ?? 'background_reactor',
-            target: parsed.selected.target ?? 'target_crosshair',
-            particles: parsed.selected.particles ?? 'particles_default',
-            sound: parsed.selected.sound ?? 'sound_default',
+            palette: migrate('palette', 'palette_default'),
+            background: migrate('background', 'background_reactor'),
+            target: migrate('target', 'target_crosshair'),
+            particles: migrate('particles', 'particles_default'),
+            sound: migrate('sound', 'sound_default'),
           },
         };
       }
@@ -216,6 +226,21 @@ export function selectCosmetic(
   category: CosmeticCategory,
   id: string,
 ): CosmeticState {
-  if (!state.owned.includes(id)) return state;
+  if (id !== RANDOM_SELECTION && !state.owned.includes(id)) return state;
   return { ...state, selected: { ...state.selected, [category]: id } };
+}
+
+/** Picks from the full catalogue in showcase mode, including cosmetics not yet owned. */
+export function resolveCosmeticSelection(
+  state: CosmeticState,
+  category: CosmeticCategory,
+  seed: number,
+): string {
+  const selected = state.selected[category];
+  if (selected !== RANDOM_SELECTION) return selected;
+  const candidates = ALL_COSMETICS.filter((item) => item.category === category);
+  if (candidates.length === 0) return '';
+  let hash = (seed ^ category.length) >>> 0;
+  for (let i = 0; i < category.length; i += 1) hash = Math.imul(hash ^ category.charCodeAt(i), 0x45d9f3b) >>> 0;
+  return candidates[hash % candidates.length]!.id;
 }
